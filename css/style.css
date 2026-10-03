@@ -1,0 +1,30 @@
+/* ==========================================================================
+   가족 주식 대시보드 - 스타일 시트 (style.css)
+   ========================================================================== */
+
+/* 모바일 가로 탭 스크롤바 숨김 */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 다크 테마 커스텀 색상 변수 */
+:root {
+  --bg-main: #0b1120;
+  --bg-card: #0f172a;
+  --bg-subcard: rgba(15, 23, 42, 0.7);
+  --border-color: #1e293b;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --primary-blue: #3b82f6;
+  --accent-amber: #f59e0b;
+}
+
+/* 터치 디바이스 탭 효과 최적화 */
+button {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
