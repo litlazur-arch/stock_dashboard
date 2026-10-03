@@ -124,10 +124,10 @@ window.DashboardApp = {
       growthEl.innerText = (pct >= 0 ? '+' : '') + pct + '% (12개월)';
     }
 
-    // 5. 차트 모듈 호출 (상하 2단 분리 막대 & 비중 바)
+    // 5. 차트 모듈 호출 (상하 2단 분리 막대 & 트리맵 비중 차트)
     window.DashboardCharts.renderAssetBarChart(historyData, 'assetBarChartSvg', 'assetMinVal', 'assetMaxVal');
     window.DashboardCharts.renderDividendBarChart(historyData, 'dividendBarChartSvg', 'latestDividendLabel', 'totalDividendYear', 'avgDividendMonth');
-    window.DashboardCharts.renderRatioBar(matchedHoldings, currentTotalAsset, 'ratioStackedBar', 'ratioLegendContainer', 'stockCountBadge');
+    window.DashboardCharts.renderRatioTreemap(matchedHoldings, currentTotalAsset, 'ratioTreemapContainer', 'stockCountBadge');
 
     // 6. 종목 상세 카드 리스트 렌더링
     window.DashboardUI.renderHoldingsList(matchedHoldings, currentTotalAsset, 'stockListContainer');

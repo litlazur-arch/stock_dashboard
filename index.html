@@ -113,20 +113,24 @@
         </div>
       </article>
 
-      <!-- 3단: 보유 종목 비율 100% 비중 막대 -->
+      <!-- 3단: 보유 종목 비율 트리맵 (Treemap) -->
       <article class="bg-slate-950/60 border border-slate-800 rounded-2xl p-4 shadow-sm">
         <div class="flex items-center justify-between mb-3">
           <div class="flex items-center gap-2">
             <div class="w-2 h-4 rounded-full bg-indigo-500"></div>
-            <h2 class="text-sm font-semibold text-white">보유 종목 비율</h2>
+            <h2 class="text-sm font-semibold text-white">보유 종목 비율 (트리맵)</h2>
           </div>
           <span class="text-xs text-slate-400" id="stockCountBadge">0개 종목</span>
         </div>
         
-        <div class="w-full h-4 rounded-full overflow-hidden flex bg-slate-800 border border-slate-700" id="ratioStackedBar">
+        <!-- 트리맵 인터랙티브 영역 -->
+        <div class="w-full h-56 relative overflow-hidden bg-slate-950 border border-slate-800 select-none" id="ratioTreemapContainer">
         </div>
 
-        <div class="flex flex-wrap gap-2 mt-3" id="ratioLegendContainer">
+        <!-- 안내 캡션 -->
+        <div class="flex items-center justify-between text-[11px] text-slate-400 mt-2.5 px-0.5">
+          <span>💡 타일 터치 시 하단 종목 카드로 이동</span>
+          <span class="text-indigo-400 font-medium">면적 = 평가액 비중</span>
         </div>
       </article>
 

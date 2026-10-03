@@ -46,7 +46,8 @@ window.DashboardUI = {
     sorted.forEach(item => {
       const pct = totalAsset > 0 ? ((item.total / totalAsset) * 100).toFixed(1) : 0;
       const card = document.createElement('div');
-      card.className = "p-3 bg-slate-950/80 border border-slate-800 rounded-xl flex items-center justify-between hover:border-blue-500 transition-all";
+      card.id = 'stock-card-' + item.code;
+      card.className = "p-3 bg-slate-950/80 border border-slate-800 rounded-xl flex items-center justify-between hover:border-blue-500 transition-all duration-300";
       
       card.innerHTML = `
         <div class="flex items-center gap-2.5">

@@ -6,8 +6,10 @@
  */
 
 window.DashboardCharts = {
-  // 종목별 비중 컬러 팔레트
+  // 종목별 비중 컬러 팔레트 (20종 모던 핀테크 컬러)
   colorPalette: [
+    "#2563eb", "#059669", "#7c3aed", "#d97706", "#db2777",
+    "#0891b2", "#4f46e5", "#65a30d", "#0d9488", "#ea580c",
     "#3b82f6", "#10b981", "#8b5cf6", "#f59e0b", "#ec4899",
     "#06b6d4", "#6366f1", "#84cc16", "#14b8a6", "#f97316"
   ],
@@ -150,42 +152,195 @@ window.DashboardCharts = {
   },
 
   /**
-   * 보유 종목 100% 가로 누적 비중 바 및 범례를 렌더링합니다.
+   * 보유 종목 2차원 사각형 면적 분할(Squarified Treemap) 차트를 렌더링합니다.
+   */
+  renderRatioTreemap(holdings, totalAsset, containerId, countBadgeId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    container.innerHTML = '';
+    const badge = document.getElementById(countBadgeId);
+    if (badge) badge.innerText = `${holdings.length}개 종목`;
+
+    if (!holdings || holdings.length === 0 || totalAsset <= 0) {
+      container.innerHTML = '<div class="w-full h-full flex items-center justify-center text-xs text-slate-500">보유 종목이 없습니다.</div>';
+      return;
+    }
+
+    const width = container.clientWidth || 320;
+    const height = container.clientHeight || 224;
+
+    // 총금액 내림차순 정렬 및 색상 부여
+    const sorted = [...holdings].sort((a, b) => b.total - a.total);
+    sorted.forEach((item, idx) => {
+      item.color = this.colorPalette[idx % this.colorPalette.length];
+    });
+
+    const rects = this.computeSquarifiedTreemap(sorted, 0, 0, width, height);
+
+    rects.forEach(tile => {
+      const el = document.createElement('div');
+      el.style.position = 'absolute';
+      el.style.left = `${tile.x}px`;
+      el.style.top = `${tile.y}px`;
+      el.style.width = `${tile.w}px`;
+      el.style.height = `${tile.h}px`;
+      el.style.backgroundColor = tile.color || '#3b82f6';
+      el.style.boxSizing = 'border-box';
+      el.className = 'border border-black/30 overflow-hidden flex flex-col items-center justify-center text-center p-0.5 cursor-pointer transition-all duration-150 hover:brightness-110 active:scale-95';
+
+      // 마우스 오버 / 터치 툴팁
+      el.title = `${tile.name}: ${tile.pct}% (${window.DashboardState.formatNumber(tile.total)}원)`;
+
+      // 스마트 텍스트 표시 (금액 제거, 종목명 및 퍼센트 유지)
+      if (tile.w >= 48 && tile.h >= 32) {
+        // 중·대형 타일: 종목명 + 비중(%)
+        el.innerHTML = `
+          <div class="font-bold text-[11px] text-white truncate max-w-full leading-tight drop-shadow-xs px-0.5">${tile.name}</div>
+          <div class="text-[12px] font-black text-white/95 font-mono mt-0.5 drop-shadow-xs">${tile.pct}%</div>
+        `;
+      } else if (tile.w >= 36 && tile.h >= 24) {
+        // 소형 타일: 종목명(작게) + 비중(%)
+        el.innerHTML = `
+          <div class="font-bold text-[10px] text-white truncate max-w-full leading-tight drop-shadow-xs px-0.5">${tile.name}</div>
+          <div class="text-[10px] font-bold text-white/90 font-mono drop-shadow-xs">${tile.pct}%</div>
+        `;
+      } else if (tile.w >= 28 && tile.h >= 18) {
+        // 극소형 직전 타일: 비중만 표시
+        el.innerHTML = `
+          <div class="font-bold text-[9px] text-white/90 truncate max-w-full drop-shadow-xs">${tile.pct}%</div>
+        `;
+      } else {
+        // 극소형 타일: 글자 숨김 (색상 타일만 표시, 툴팁 및 터치 지원)
+        el.innerHTML = '';
+      }
+
+      // 클릭 시 하단 종목 카드로 스크롤 및 하이라이트 효과
+      el.addEventListener('click', () => {
+        const cardId = 'stock-card-' + tile.code;
+        const targetCard = document.getElementById(cardId);
+        if (targetCard) {
+          targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          targetCard.classList.add('ring-2', 'ring-indigo-400', 'bg-indigo-950/60');
+          setTimeout(() => {
+            targetCard.classList.remove('ring-2', 'ring-indigo-400', 'bg-indigo-950/60');
+          }, 1600);
+        }
+      });
+
+      container.appendChild(el);
+    });
+  },
+
+  /**
+   * Squarified Treemap 알고리즘: 직사각형 면적을 1:1에 가까운 사각형으로 분할
+   */
+  computeSquarifiedTreemap(items, x, y, width, height) {
+    if (!items || items.length === 0) return [];
+    if (items.length === 1) {
+      const it = items[0];
+      return [{ ...it, x, y, w: width, h: height, pct: '100.0' }];
+    }
+
+    const totalValue = items.reduce((sum, d) => sum + d.total, 0);
+    if (totalValue <= 0) return [];
+
+    const totalArea = width * height;
+    const elements = items.map(d => ({
+      ...d,
+      area: (d.total / totalValue) * totalArea,
+      pct: ((d.total / totalValue) * 100).toFixed(1)
+    })).sort((a, b) => b.area - a.area);
+
+    const rects = [];
+
+    function worstAspectRatio(row, sideLength) {
+      const s = row.reduce((sum, el) => sum + el.area, 0);
+      if (s === 0 || sideLength === 0) return Infinity;
+      const h = s / sideLength;
+      let worst = 0;
+      for (const el of row) {
+        const w = el.area / h;
+        if (w === 0) continue;
+        const ratio = Math.max(w / h, h / w);
+        if (ratio > worst) worst = ratio;
+      }
+      return worst;
+    }
+
+    function layoutRow(row, sideLength, currentX, currentY, isHorizontal) {
+      const s = row.reduce((sum, el) => sum + el.area, 0);
+      const rowThickness = sideLength > 0 ? (s / sideLength) : 0;
+      let offset = 0;
+
+      for (const el of row) {
+        const elLength = rowThickness > 0 ? (el.area / rowThickness) : 0;
+        if (isHorizontal) {
+          rects.push({
+            ...el,
+            x: currentX + offset,
+            y: currentY,
+            w: elLength,
+            h: rowThickness
+          });
+          offset += elLength;
+        } else {
+          rects.push({
+            ...el,
+            x: currentX,
+            y: currentY + offset,
+            w: rowThickness,
+            h: elLength
+          });
+          offset += elLength;
+        }
+      }
+      return rowThickness;
+    }
+
+    let curX = x;
+    let curY = y;
+    let curW = width;
+    let curH = height;
+
+    let remaining = [...elements];
+    let currentRow = [];
+
+    while (remaining.length > 0) {
+      const isHorizontal = curW >= curH;
+      const side = isHorizontal ? curH : curW;
+
+      const nextEl = remaining[0];
+      const testRow = [...currentRow, nextEl];
+
+      if (currentRow.length === 0 || worstAspectRatio(testRow, side) <= worstAspectRatio(currentRow, side)) {
+        currentRow.push(remaining.shift());
+      } else {
+        const thickness = layoutRow(currentRow, side, curX, curY, !isHorizontal);
+        if (isHorizontal) {
+          curX += thickness;
+          curW -= thickness;
+        } else {
+          curY += thickness;
+          curH -= thickness;
+        }
+        currentRow = [];
+      }
+    }
+
+    if (currentRow.length > 0) {
+      const isHorizontal = curW >= curH;
+      const side = isHorizontal ? curH : curW;
+      layoutRow(currentRow, side, curX, curY, !isHorizontal);
+    }
+
+    return rects;
+  },
+
+  /**
+   * (하위 호환) 기존 가로 누적 바 렌더링 유지
    */
   renderRatioBar(holdings, totalAsset, barId, legendId, countBadgeId) {
-    const bar = document.getElementById(barId);
-    const legend = document.getElementById(legendId);
-    if (!bar || !legend) return;
-
-    bar.innerHTML = '';
-    legend.innerHTML = '';
-    document.getElementById(countBadgeId).innerText = `${holdings.length}개 종목`;
-
-    // 총금액 내림차순 정렬
-    const sorted = [...holdings].sort((a, b) => b.total - a.total);
-
-    sorted.forEach((item, idx) => {
-      const color = this.colorPalette[idx % this.colorPalette.length];
-      item.color = color; // 리스트 카드에서 재사용
-
-      const pct = totalAsset > 0 ? ((item.total / totalAsset) * 100).toFixed(1) : 0;
-
-      // 가로 누적 바 조각
-      const chunk = document.createElement('div');
-      chunk.style.width = pct + '%';
-      chunk.style.backgroundColor = color;
-      chunk.title = `${item.name}: ${pct}%`;
-      bar.appendChild(chunk);
-
-      // 범례 태그
-      const tag = document.createElement('div');
-      tag.className = "flex items-center gap-1.5 text-xs bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800";
-      tag.innerHTML = `
-        <span class="w-2 h-2 rounded-full" style="background-color: ${color}"></span>
-        <span class="font-medium text-slate-200 truncate max-w-[110px]">${item.name}</span>
-        <span class="text-slate-400 font-mono">${pct}%</span>
-      `;
-      legend.appendChild(tag);
-    });
+    this.renderRatioTreemap(holdings, totalAsset, barId, countBadgeId);
   }
 };
