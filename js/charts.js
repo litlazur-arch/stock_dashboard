@@ -35,8 +35,24 @@ window.DashboardCharts = {
     history.forEach((item, idx) => {
       const x = idx * (width / history.length) + (width / history.length - barWidth) / 2;
       const range = (maxVal - minVal) || 1;
-      const barHeight = Math.max(4, ((item.asset - minVal) / range) * (height - 32));
-      const y = height - 20 - barHeight;
+      const barHeight = Math.max(4, ((item.asset - minVal) / range) * (height - 34));
+      const y = height - 22 - barHeight;
+
+      // 1. 전달과 비교하여 색상 지정 (상승: RED, 하락: BLUE, Default: RED)
+      let barColor = "#ef4444"; // 기본값: RED (상승)
+      let changeText = "";
+      if (idx > 0) {
+        const prevAsset = history[idx - 1].asset;
+        if (item.asset < prevAsset) {
+          barColor = "#3b82f6"; // 전달 대비 하락: BLUE
+          const diffPct = (((item.asset - prevAsset) / prevAsset) * 100).toFixed(1);
+          changeText = ` (전월대비 ${diffPct}%)`;
+        } else {
+          barColor = "#ef4444"; // 전달 대비 상승 또는 동일: RED
+          const diffPct = (((item.asset - prevAsset) / prevAsset) * 100).toFixed(1);
+          changeText = ` (전월대비 +${diffPct}%)`;
+        }
+      }
 
       // SVG 막대 사각형
       const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
@@ -45,26 +61,31 @@ window.DashboardCharts = {
       rect.setAttribute("width", barWidth);
       rect.setAttribute("height", barHeight);
       rect.setAttribute("rx", "3");
-      rect.setAttribute("fill", idx === history.length - 1 ? "#3b82f6" : "#60a5fa");
+      rect.setAttribute("fill", barColor);
       rect.setAttribute("class", "hover:opacity-80 transition-opacity cursor-pointer");
 
       // 마우스 오버 툴팁
       const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
-      title.textContent = `${item.month}: ${window.DashboardState.formatKoreanMoney(item.asset)}원 (${window.DashboardState.formatNumber(item.asset)}원)`;
+      title.textContent = `${item.month}: ${window.DashboardState.formatKoreanMoney(item.asset)}원 (${window.DashboardState.formatNumber(item.asset)}원)${changeText}`;
       rect.appendChild(title);
       svg.appendChild(rect);
 
-      // 월별 라벨 (짝수 인덱스 또는 마지막 월 표시)
-      if (idx % 2 === 1 || idx === history.length - 1) {
-        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        text.setAttribute("x", x + barWidth / 2);
-        text.setAttribute("y", height - 4);
-        text.setAttribute("text-anchor", "middle");
-        text.setAttribute("font-size", "10");
-        text.setAttribute("fill", "#94a3b8");
-        text.textContent = item.month.replace("20", "");
-        svg.appendChild(text);
-      }
+      // 2. X축 레이블: 1월은 연도와 함께('YY.1월), 그 외는 월만 표시 (모든 월 누락 없이 표시)
+      const parts = (item.month || "").split('.');
+      const yearStr = parts[0] || "";
+      const monthNum = parseInt(parts[1], 10);
+      const isJanuary = (monthNum === 1);
+      const labelText = isJanuary ? `'${yearStr.slice(-2)}.1월` : `${monthNum}월`;
+
+      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      text.setAttribute("x", x + barWidth / 2);
+      text.setAttribute("y", height - 4);
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("font-size", "9");
+      text.setAttribute("font-weight", isJanuary ? "700" : "500");
+      text.setAttribute("fill", isJanuary ? "#f1f5f9" : "#94a3b8");
+      text.textContent = labelText;
+      svg.appendChild(text);
     });
   },
 
@@ -109,16 +130,22 @@ window.DashboardCharts = {
       rect.appendChild(title);
       svg.appendChild(rect);
 
-      if (idx % 2 === 1 || idx === history.length - 1) {
-        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        text.setAttribute("x", x + barWidth / 2);
-        text.setAttribute("y", height - 4);
-        text.setAttribute("text-anchor", "middle");
-        text.setAttribute("font-size", "10");
-        text.setAttribute("fill", "#94a3b8");
-        text.textContent = item.month.replace("20", "");
-        svg.appendChild(text);
-      }
+      // X축 레이블 (12개월 누락 없이 모두 표시, 1월은 연도 포함)
+      const parts = (item.month || "").split('.');
+      const yearStr = parts[0] || "";
+      const monthNum = parseInt(parts[1], 10);
+      const isJanuary = (monthNum === 1);
+      const labelText = isJanuary ? `'${yearStr.slice(-2)}.1월` : `${monthNum}월`;
+
+      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      text.setAttribute("x", x + barWidth / 2);
+      text.setAttribute("y", height - 4);
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("font-size", "9");
+      text.setAttribute("font-weight", isJanuary ? "700" : "500");
+      text.setAttribute("fill", isJanuary ? "#f1f5f9" : "#94a3b8");
+      text.textContent = labelText;
+      svg.appendChild(text);
     });
   },
 
