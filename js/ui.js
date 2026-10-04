@@ -19,8 +19,8 @@ window.DashboardUI = {
       const isActive = idx === activeIndex;
       
       btn.className = isActive
-        ? "px-3.5 py-1.5 rounded-full text-xs font-semibold bg-blue-600 text-white whitespace-nowrap shadow-xs transition-all"
-        : "px-3.5 py-1.5 rounded-full text-xs font-medium bg-slate-950 text-slate-400 hover:text-white border border-slate-800 whitespace-nowrap transition-all";
+        ? "px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold bg-blue-600 text-white whitespace-nowrap shadow-xs transition-all"
+        : "px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-slate-950 text-slate-400 hover:text-white border border-slate-800 whitespace-nowrap transition-all";
       btn.innerText = acc.name;
       
       btn.onclick = () => onSelectTab(idx);
@@ -91,16 +91,16 @@ window.DashboardUI = {
     sorted.forEach(item => {
       const card = document.createElement('div');
       card.id = 'stock-card-' + item.code;
-      card.className = "p-3 bg-slate-950/80 border border-slate-800 rounded-xl flex items-center justify-between hover:border-blue-500 transition-all duration-300";
+      card.className = "p-2.5 sm:p-3 bg-slate-950/80 border border-slate-800 rounded-xl flex items-center justify-between hover:border-blue-500 transition-all duration-300";
       
       // 3. 전일 대비 상승률 표시 (상승: RED, 하락: BLUE)
       let changeHtml = '';
       if (item.changeRate !== undefined && item.changeRate !== null) {
         const rate = parseFloat(item.changeRate);
         if (rate > 0) {
-          changeHtml = `<span class="text-xs font-extrabold text-red-500 font-mono">▲ +${rate.toFixed(2)}%</span>`;
+          changeHtml = `<span class="text-xs sm:text-[13px] font-extrabold text-red-500 font-mono">▲ +${rate.toFixed(2)}%</span>`;
         } else if (rate < 0) {
-          changeHtml = `<span class="text-xs font-extrabold text-blue-500 font-mono">▼ ${rate.toFixed(2)}%</span>`;
+          changeHtml = `<span class="text-xs sm:text-[13px] font-extrabold text-blue-500 font-mono">▼ ${rate.toFixed(2)}%</span>`;
         } else {
           changeHtml = `<span class="text-xs font-semibold text-slate-400 font-mono">0.00%</span>`;
         }
@@ -109,29 +109,28 @@ window.DashboardUI = {
       }
 
       card.innerHTML = `
-        <div class="flex items-center gap-2.5">
-          <div class="w-1.5 h-10 rounded-full" style="background-color: ${item.color || '#3b82f6'}"></div>
-          <div>
-            <div class="text-xs font-bold text-slate-100 flex items-center gap-1.5">
-              ${item.name}
-              <span class="text-[10px] font-mono px-1 py-0.2 rounded bg-slate-900 text-slate-400 border border-slate-800">${item.code}</span>
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-1.5 h-10 rounded-full shrink-0" style="background-color: ${item.color || '#3b82f6'}"></div>
+          <div class="min-w-0">
+            <div class="text-[13px] sm:text-sm font-bold text-slate-100 flex items-center gap-1.5 truncate">
+              <span class="truncate">${item.name}</span>
+              <span class="text-[10px] font-mono px-1 py-0.2 rounded bg-slate-900 text-slate-400 border border-slate-800 shrink-0">${item.code}</span>
             </div>
-            <!-- 1. 종목 하단: '주'와 '만 원' 기준 동일 위치 수직 정렬 -->
-            <div class="flex items-center text-[11px] text-slate-400 mt-1 whitespace-nowrap">
-              <span class="text-slate-400 shrink-0">보유</span>
-              <span class="w-[45px] text-right font-mono font-medium text-slate-200 shrink-0">${window.DashboardState.formatNumber(item.qty)}</span>
-              <span class="text-slate-400 shrink-0 ml-1">주</span>
-              <span class="mx-2 text-slate-700 shrink-0">|</span>
+            <!-- 수량('주' 위치 통일) & 평가액('만원' 공백 삭제, 간격 최소화) -->
+            <div class="flex items-center text-xs text-slate-400 mt-1 whitespace-nowrap">
+              <span class="w-[46px] text-right font-mono font-semibold text-slate-200 shrink-0">${window.DashboardState.formatNumber(item.qty)}</span>
+              <span class="text-slate-400 shrink-0 ml-0.5">주</span>
+              <span class="mx-1.5 text-slate-700 shrink-0">|</span>
               <span class="text-slate-400 shrink-0">평가액</span>
-              <span class="w-[54px] text-right font-mono font-medium text-slate-200 shrink-0">${window.DashboardState.formatManWonNum(item.total)}</span>
-              <span class="text-slate-400 shrink-0 ml-1">만 원</span>
+              <span class="ml-1 font-mono font-semibold text-slate-200 shrink-0">${window.DashboardState.formatManWonNum(item.total)}</span>
+              <span class="text-slate-400 shrink-0">만원</span>
             </div>
           </div>
         </div>
         
-        <!-- 2. 우측: 현재가 크게 표시 & 3. 비중 삭제 후 전일 대비 상승률 표시 -->
+        <!-- 우측: 현재가 크게 표시 & 전일 대비 상승률 -->
         <div class="text-right flex flex-col items-end justify-center shrink-0 ml-2">
-          <div class="text-sm font-extrabold text-white font-mono tracking-tight">
+          <div class="text-sm sm:text-base font-extrabold text-white font-mono tracking-tight">
             ${window.DashboardState.formatNumber(item.price)}원
           </div>
           <div class="mt-0.5">
@@ -178,24 +177,12 @@ window.DashboardUI = {
   },
 
   /**
-   * 사용자 전환 버튼 UI 업데이트
+   * 사용자 포트폴리오 타이틀 업데이트 (포트폴리오 Ⓙ / 포트폴리오 Ⓚ)
    */
   updateUserSwitcher(userCode) {
-    const btnJ = document.getElementById('btnUserJ');
-    const btnK = document.getElementById('btnUserK');
-    const urlDisplay = document.getElementById('urlDisplay');
     const userTitle = document.getElementById('userTitleLabel');
-
-    if (userCode === 'j') {
-      btnJ.className = "px-2.5 py-1 rounded-md font-medium transition-all bg-blue-600 text-white shadow-xs";
-      btnK.className = "px-2.5 py-1 rounded-md font-medium transition-all text-slate-400 hover:text-white";
-      urlDisplay.innerText = "https://.../u/j";
-      userTitle.innerText = "내 포트폴리오 (Ⓙ)";
-    } else {
-      btnK.className = "px-2.5 py-1 rounded-md font-medium transition-all bg-blue-600 text-white shadow-xs";
-      btnJ.className = "px-2.5 py-1 rounded-md font-medium transition-all text-slate-400 hover:text-white";
-      urlDisplay.innerText = "https://.../u/k";
-      userTitle.innerText = "배우자 포트폴리오 (Ⓚ)";
+    if (userTitle) {
+      userTitle.innerText = userCode === 'k' ? "포트폴리오 Ⓚ" : "포트폴리오 Ⓙ";
     }
   }
 };
