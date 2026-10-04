@@ -1,0 +1,19 @@
+{
+  "name": "가족 주식 & 배당금 대시보드",
+  "short_name": "주식대시보드",
+  "description": "실시간 주가 및 최근 12개월 자산/배당금 추이 모바일 대시보드",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1120",
+  "theme_color": "#0b1120",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
