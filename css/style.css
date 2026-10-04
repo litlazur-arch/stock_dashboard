@@ -1,11 +1,12 @@
 /* ==========================================================================
-   가족 주식 대시보드 - 스타일 시트 (style.css)
+   Stock Dashboard - 스타일 시트 (style.css)
    ========================================================================== */
 
 /* 모바일 가로 탭 스크롤바 숨김 */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;

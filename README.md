@@ -22,10 +22,23 @@ stock-dashboard/
 ├── index.html           # 메인 HTML 화면 구조
 ├── css/
 │   └── style.css        # 스타일시트 및 다크 테마 변수
-└── js/
-    ├── api.js           # Google Apps Script Web App 연동 모듈
-    ├── state.js         # 사용자 상태, 계좌 매핑 및 금액 포맷터
-    ├── charts.js        # SVG 자산/배당 막대그래프 및 비중 바 렌더링
-    ├── ui.js            # 계좌 탭, 종목 리스트 카드 및 상태 제어
-    └── app.js           # 전체 모듈 조율 메인 컨트롤러
+├── js/
+│   ├── api.js           # Google Apps Script Web App 연동 모듈
+│   ├── state.js         # 사용자 상태, 계좌 매핑 및 금액 포맷터
+│   ├── charts.js        # SVG 자산/배당 막대그래프 및 비중 바 렌더링
+│   ├── ui.js            # 계좌 탭, 종목 리스트 카드 및 상태 제어
+│   └── app.js           # 전체 모듈 조율 메인 컨트롤러
+├── gas/
+│   └── Code.gs          # Google Apps Script 백엔드 소스코드
+└── scripts/
+    └── check-privacy.js # 커밋 전 개인정보 자동 검사 스크립트
 ```
+
+## 📌 향후 개선 및 보안 강화 과제 (Backlog)
+- [ ] **Cloudflare Pages 이전 및 GitHub 저장소 비공개(Private) 전환**
+  - **목적**: 소스코드, 커밋 작성자 이메일, Google Apps Script API 엔드포인트 URL의 외부 노출 원천 차단
+  - **내용**: Cloudflare 무료 계정 연동 ➡️ GitHub 저장소를 Private으로 전환 ➡️ (선택) Zero Trust 이메일 인증 추가
+- [ ] **Google Apps Script 접근 보안 강화**
+  - **목적**: 비인가된 외부 호출 차단
+  - **내용**: API 호출 시 간단한 보안 토큰 파라미터(`?token=...`) 검증 로직 추가
+
