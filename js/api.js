@@ -7,7 +7,7 @@
 
 window.DashboardAPI = {
   // 배포된 구글 시트 웹 앱 URL
-  ENDPOINT: "https://script.google.com/macros/s/AKfycbxHGNe6OJDymsWp6n2b5wdDY5Ou-wgUbXD1l3wf39VS3AEObDEncxNbuiEWXVMiB-X2/exec",
+  ENDPOINT: "https://script.google.com/macros/s/AKfycbyFhLztxLuaxSw82r08fWJ3Ol_L7dnskJpzje0xvO_GFdkGQ8a48LgUb6PgUlwafuVP/exec",
 
   /**
    * 구글 시트에서 최신 자산 히스토리 및 보유 종목 데이터를 조회합니다.

@@ -1,65 +1,49 @@
-/**
- * ==========================================================================
- * Google Apps Script - SPI2 연동 백엔드 API (Code.gs)
- * 
- * 주요 기능:
- * 1. Brief 시트에서 최근 12개월 자산 및 배당금 추이 자동 추출 (2026년 10월 배당 완벽 반영)
- * 2. 6개 계좌 시트(위탁Ⓚ, 위탁Ⓙ, 개인연금Ⓚ, 개인연금Ⓙ, 퇴직연금, IRP)에서 최신 보유 종목 자동 추출
- * 3. [방식 B 완벽 구현] 네이버 증권 Polling API(1회 초고속 일괄 호출)로
- *    - 기준가: 전일 종가 (sv)
- *    - 현재가: 실시간 현재가 (nv)
- *    - 등락률: 전일 대비 실시간 등락률 (cr & rf)
- *    - 실시간 평가액: 보유수량 × 실시간 현재가로 자동 계산
- * 4. 견고한 에러 핸들링: 외부 API 통신 장애 시에도 대시보드가 절대 중단되지 않음
- * ==========================================================================
- */
+function authorize() {
+  var url = "https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:000660";
+  var res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+  Logger.log("권한 승인 완료! HTTP " + res.getResponseCode());
+}
+
+function test() {
+  var codes = ["000660", "005380"];
+  var result = fetchStockPollingData(codes);
+  Logger.log("=== 테스트 결과 ===");
+  Logger.log(JSON.stringify(result));
+}
 
 function doGet(e) {
   try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-
-    // ==========================================
-    // 1. Brief 시트에서 '현재 월까지' 최근 12개월 추출
-    // ==========================================
-    const wsBrief = ss.getSheetByName("Brief");
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var wsBrief = ss.getSheetByName("Brief");
     if (!wsBrief) throw new Error("Brief 시트를 찾을 수 없습니다.");
 
-    const briefRange = wsBrief.getDataRange();
-    const briefValues = briefRange.getValues();
-    const briefFormulas = briefRange.getFormulas();
+    var briefValues = wsBrief.getDataRange().getValues();
+    var briefFormulas = wsBrief.getDataRange().getFormulas();
+    var now = new Date();
+    var currentYM = now.getFullYear() * 100 + (now.getMonth() + 1);
+    var monthMap = {};
+    var monthKeys = [];
 
-    // 현재 기준 연/월 (미래 월 차단용)
-    const now = new Date();
-    const currentYM = now.getFullYear() * 100 + (now.getMonth() + 1);
+    for (var r = 3; r < briefValues.length; r++) {
+      var rawDate = briefValues[r][1];
+      var formulaDate = String(briefFormulas[r][1] || "").toUpperCase();
+      var totalAsset = Number(briefValues[r][2]) || 0;
+      var totalDiv = Number(briefValues[r][5]) || 0;
 
-    // 월별 중복 제거를 위한 Map (Key: "2026.10")
-    const monthMap = new Map();
-
-    for (let r = 3; r < briefValues.length; r++) {
-      const rawDate = briefValues[r][1]; // B열: 날짜
-      const formulaDate = String(briefFormulas[r][1] || '').toUpperCase();
-      const totalAsset = Number(briefValues[r][2]) || 0; // C열: 총 잔고
-      const totalDiv = Number(briefValues[r][5]) || 0;   // F열: 총 배당금
-
-      // =TODAY() 수식이 들어있는 미래 템플릿 행은 건너뜁니다
-      if (formulaDate.includes('TODAY')) continue;
+      if (formulaDate.indexOf("TODAY") !== -1) continue;
 
       if (rawDate && !isNaN(new Date(rawDate).getTime()) && totalAsset > 0) {
-        const d = new Date(rawDate);
-        const y = d.getFullYear();
-        const m = d.getMonth() + 1;
-        const rowYM = y * 100 + m;
+        var d = new Date(rawDate);
+        var y = d.getFullYear();
+        var m = d.getMonth() + 1;
+        var rowYM = y * 100 + m;
 
-        // 현재 월 이하인 실제 기록만 수집 (미래 월 제외)
         if (rowYM <= currentYM) {
-          const monthKey = y + "." + String(m).padStart(2, '0');
+          var monthKey = y + "." + (m < 10 ? "0" + m : m);
+          if (monthMap[monthKey] && monthMap[monthKey].totalDiv > 0 && totalDiv === 0) continue;
+          if (!monthMap[monthKey]) monthKeys.push(monthKey);
 
-          // 이미 정상 배당금이 기록된 행이 있다면 0원짜리 빈 템플릿 행으로 덮어쓰지 않음
-          if (monthMap.has(monthKey) && monthMap.get(monthKey).totalDiv > 0 && totalDiv === 0) {
-            continue;
-          }
-
-          monthMap.set(monthKey, {
+          monthMap[monthKey] = {
             month: monthKey,
             totalAsset: totalAsset,
             totalDiv: totalDiv,
@@ -75,20 +59,19 @@ function doGet(e) {
             retire_Div: Number(briefValues[r][17]) || 0,
             irp_Asset: Number(briefValues[r][18]) || 0,
             irp_Div: Number(briefValues[r][19]) || 0
-          });
+          };
         }
       }
     }
 
-    // 최근 12개월만 추출
-    const allMonths = Array.from(monthMap.values());
-    const historyList = allMonths.slice(-12);
+    var historyList = [];
+    var recentKeys = monthKeys.slice(-12);
+    for (var k = 0; k < recentKeys.length; k++) {
+      historyList.push(monthMap[recentKeys[k]]);
+    }
 
-    // ==========================================
-    // 2. 각 계좌 시트에서 최신 보유 종목 추출
-    // ==========================================
-    const holdingsList = [];
-    const targetSheets = [
+    var holdingsList = [];
+    var targetSheets = [
       { name: "위탁Ⓚ", maxCol: 75 },
       { name: "위탁Ⓙ", maxCol: 75 },
       { name: "개인연금Ⓚ", maxCol: 25 },
@@ -97,36 +80,33 @@ function doGet(e) {
       { name: "IRP", maxCol: 30 }
     ];
 
-    targetSheets.forEach(cfg => {
-      const ws = ss.getSheetByName(cfg.name);
-      if (!ws) return;
+    for (var s = 0; s < targetSheets.length; s++) {
+      var cfg = targetSheets[s];
+      var ws = ss.getSheetByName(cfg.name);
+      if (!ws) continue;
 
-      const values = ws.getDataRange().getValues();
-      if (values.length < 4) return;
+      var values = ws.getDataRange().getValues();
+      if (values.length < 4) continue;
 
-      // 실제 주가/수량이 있는 유효 최신 행 찾기 (아래쪽 빈 행 건너뛰기)
-      let lastRowIdx = 3;
-      for (let r = 3; r < values.length; r++) {
-        if (values[r][1] && Number(values[r][2]) > 0) {
-          lastRowIdx = r;
-        }
+      var lastRowIdx = 3;
+      for (var rIdx = 3; rIdx < values.length; rIdx++) {
+        if (values[rIdx][1] && Number(values[rIdx][2]) > 0) lastRowIdx = rIdx;
       }
 
-      // 8열 간격으로 각 종목 블록 파싱 (Row 2가 종목코드 및 종목명)
-      for (let col = 2; col < Math.min(cfg.maxCol, values[1].length); col += 8) {
-        const code = String(values[1][col] || "").trim();
-        const name = String(values[1][col + 1] || "").trim();
+      var maxC = Math.min(cfg.maxCol, values[1].length);
+      for (var col = 2; col < maxC; col += 8) {
+        var code = String(values[1][col] || "").trim();
+        var name = String(values[1][col + 1] || "").trim();
+        if (!code || !name || code.indexOf("합계") !== -1 || name.indexOf("합계") !== -1) continue;
 
-        if (!code || !name || code.includes("합계") || name.includes("합계")) continue;
-
-        const price = Number(values[lastRowIdx][col]) || 0;
-        const qty = Number(values[lastRowIdx][col + 4]) || 0;
-        const total = Number(values[lastRowIdx][col + 6]) || (qty * price);
+        var price = Number(values[lastRowIdx][col]) || 0;
+        var qty = Number(values[lastRowIdx][col + 4]) || 0;
+        var total = Number(values[lastRowIdx][col + 6]) || (qty * price);
 
         if (qty > 0) {
           holdingsList.push({
             account: cfg.name,
-            code: code.padStart(6, '0'),
+            code: padCode(code),
             name: name,
             qty: qty,
             price: price,
@@ -134,41 +114,42 @@ function doGet(e) {
           });
         }
       }
-    });
+    }
 
-    // ==========================================
-    // 3. [방식 B] 네이버 실시간 Polling API로 전일 종가 기준 현재가 & 등락률 연동
-    // ==========================================
+    var debugLog = "";
     try {
-      const uniqueCodes = [...new Set(holdingsList.map(h => h.code).filter(c => c && c.length === 6))];
-      const marketMap = fetchStockPollingData(uniqueCodes);
+      var uniqueCodes = getUniqueCodes(holdingsList);
+      var pollResult = fetchStockPollingData(uniqueCodes);
+      var marketMap = pollResult.map || {};
+      debugLog = pollResult.debug || "";
 
-      holdingsList.forEach(item => {
-        const market = marketMap[item.code];
+      for (var h = 0; h < holdingsList.length; h++) {
+        var item = holdingsList[h];
+        var market = marketMap[item.code];
         if (market) {
-          // 실시간 현재가로 업데이트
           if (market.currentPrice && market.currentPrice > 0) {
             item.price = market.currentPrice;
-            item.total = item.qty * item.price; // 실시간 평가액 = 보유수량 × 실시간 현재가
+            item.total = item.qty * item.price;
           }
-          item.basePrice = market.basePrice;   // 전일 종가 (기준가)
-          item.changeRate = market.changeRate; // 전일 대비 실시간 등락률 (▲ +0.49% / ▼ -0.57%)
-          item.changeAmount = market.changeAmount; // 전일 대비 등락폭 (원)
+          item.basePrice = market.basePrice;
+          item.changeRate = market.changeRate;
+          item.changeAmount = market.changeAmount;
         } else {
           item.changeRate = 0;
         }
-      });
+      }
     } catch (apiErr) {
-      Logger.log("실시간 시세 연동 예외 (기본값 유지): " + apiErr);
-      holdingsList.forEach(item => {
-        if (item.changeRate === undefined) item.changeRate = 0;
-      });
+      debugLog = "outer_error: " + apiErr.toString();
+      for (var h2 = 0; h2 < holdingsList.length; h2++) {
+        if (holdingsList[h2].changeRate === undefined) holdingsList[h2].changeRate = 0;
+      }
     }
 
-    const responseData = {
+    var responseData = {
       history: historyList,
       holdings: holdingsList,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+      _debug: debugLog
     };
 
     return ContentService.createTextOutput(JSON.stringify(responseData))
@@ -182,20 +163,13 @@ function doGet(e) {
   }
 }
 
-/**
- * 네이버 증권 Polling API(1회 초고속 일괄 호출)로 전일 대비 실시간 시세 취합
- * 기준가(sv): 전일 종가
- * 현재가(nv): 실시간 종가/현재가
- * 등락률(cr & rf): 전일 대비 등락률
- */
 function fetchStockPollingData(codes) {
-  if (!codes || codes.length === 0) return {};
-
-  const url = "https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:" + codes.join(",");
-  const marketMap = {};
+  if (!codes || codes.length === 0) return { map: {}, debug: "no_codes" };
+  var url = "https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:" + codes.join(",");
+  var marketMap = {};
 
   try {
-    const res = UrlFetchApp.fetch(url, {
+    var res = UrlFetchApp.fetch(url, {
       method: "get",
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -203,27 +177,49 @@ function fetchStockPollingData(codes) {
       muteHttpExceptions: true
     });
 
-    if (res.getResponseCode() === 200) {
-      const json = JSON.parse(res.getContentText());
+    var statusCode = res.getResponseCode();
+    if (statusCode === 200) {
+      var json = JSON.parse(res.getContentText());
       if (json && json.result && json.result.areas && json.result.areas[0]) {
-        const datas = json.result.areas[0].datas || [];
-        datas.forEach(d => {
-          let rate = parseFloat(d.cr) || 0;
-          if (d.rf === "5") {
-            rate = -rate; // 하락
-          }
+        var datas = json.result.areas[0].datas || [];
+        for (var i = 0; i < datas.length; i++) {
+          var d = datas[i];
+          var rate = parseFloat(d.cr) || 0;
+          if (d.rf === "5") rate = -rate;
           marketMap[d.cd] = {
-            basePrice: d.sv,        // 전일 종가 (기준가)
-            currentPrice: d.nv,     // 실시간 현재가
-            changeRate: rate,       // 전일 대비 실시간 등락률
-            changeAmount: d.cv      // 전일 대비 등락폭 (원)
+            basePrice: d.sv,
+            currentPrice: d.nv,
+            changeRate: rate,
+            changeAmount: d.cv
           };
-        });
+        }
+        return { map: marketMap, debug: "success (" + datas.length + " items)" };
       }
+      return { map: {}, debug: "json format mismatch" };
+    } else {
+      return { map: {}, debug: "http_status_" + statusCode };
     }
   } catch (err) {
     Logger.log("Polling fetch error: " + err);
+    return { map: {}, debug: "error: " + err.toString() };
   }
+}
 
-  return marketMap;
+function padCode(str) {
+  str = String(str || "");
+  while (str.length < 6) str = "0" + str;
+  return str;
+}
+
+function getUniqueCodes(list) {
+  var seen = {};
+  var result = [];
+  for (var i = 0; i < list.length; i++) {
+    var c = list[i].code;
+    if (c && c.length === 6 && !seen[c]) {
+      seen[c] = true;
+      result.push(c);
+    }
+  }
+  return result;
 }
