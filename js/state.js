@@ -57,5 +57,25 @@ window.DashboardState = {
       return Math.round(num / 10000).toLocaleString('ko-KR') + '만';
     }
     return this.formatNumber(num);
+  },
+
+  /**
+   * 평가액을 일관되게 '만 원' 단위로 변환합니다 (예: 122,795만 원, 6,791만 원)
+   * @param {number} num
+   * @returns {string} 예: "122,795만 원"
+   */
+  formatManWon(num) {
+    if (!num || isNaN(num)) return '0만 원';
+    return Math.round(num / 10000).toLocaleString('ko-KR') + '만 원';
+  },
+
+  /**
+   * 평가액의 숫자 부분만 '만 원' 단위로 변환합니다 (단위 문자 제외, 우측 정렬용)
+   * @param {number} num
+   * @returns {string} 예: "122,795"
+   */
+  formatManWonNum(num) {
+    if (!num || isNaN(num)) return '0';
+    return Math.round(num / 10000).toLocaleString('ko-KR');
   }
 };

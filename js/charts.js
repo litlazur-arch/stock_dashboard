@@ -187,7 +187,7 @@ window.DashboardCharts = {
       el.style.height = `${tile.h}px`;
       el.style.backgroundColor = tile.color || '#3b82f6';
       el.style.boxSizing = 'border-box';
-      el.className = 'border border-black/30 overflow-hidden flex flex-col items-center justify-center text-center p-0.5 cursor-pointer transition-all duration-150 hover:brightness-110 active:scale-95';
+      el.className = 'border border-white/60 overflow-hidden flex flex-col items-center justify-center text-center p-0.5 cursor-pointer transition-all duration-150 hover:brightness-110 active:scale-95';
 
       // 마우스 오버 / 터치 툴팁
       el.title = `${tile.name}: ${tile.pct}% (${window.DashboardState.formatNumber(tile.total)}원)`;

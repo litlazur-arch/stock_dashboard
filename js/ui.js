@@ -41,33 +41,101 @@ window.DashboardUI = {
       return;
     }
 
-    const sorted = [...holdings].sort((a, b) => b.total - a.total);
+    // 지정 우선순위 종목 순서 (1~11위)
+    const priorityCodes = [
+      "000660", // 1. SK하이닉스
+      "005380", // 2. 현대차
+      "005935", // 3. 삼성전자우
+      "012450", // 4. 한화에어로스페이스
+      "489790", // 5. 한화비전
+      "010950", // 6. S-Oil
+      "498400", // 7. Kodex200타켓위클리커버드콜
+      "133690", // 8. Tiger미국나스닥100
+      "367380", // 9. Ace 미국나스닥100
+      "458730", // 10. Tiger미국배당다우존스
+      "490490"  // 11. SOL미국배당미국채혼합50
+    ];
+
+    function getPriorityRank(item) {
+      const codeIdx = priorityCodes.indexOf(item.code);
+      if (codeIdx !== -1) return codeIdx;
+
+      const norm = (item.name || "").replace(/[\s\-_]/g, '').toUpperCase();
+      if (norm.includes("SK하이닉스")) return 0;
+      if (norm.includes("현대차")) return 1;
+      if (norm.includes("삼성전자우")) return 2;
+      if (norm.includes("한화에어로")) return 3;
+      if (norm.includes("한화비전")) return 4;
+      if (norm.includes("SOIL") || norm.includes("S-OIL")) return 5;
+      if (norm.includes("위클리커버드콜")) return 6;
+      if (norm.includes("TIGER") && norm.includes("나스닥100")) return 7;
+      if (norm.includes("ACE") && norm.includes("나스닥100")) return 8;
+      if (norm.includes("TIGER") && norm.includes("배당다우존스")) return 9;
+      if (norm.includes("SOL") && norm.includes("미국채혼합")) return 10;
+
+      return 999;
+    }
+
+    // 4. 지정 종목 우선 정렬 후 나머지 종목은 평가금액 큰 순서로 정렬
+    const sorted = [...holdings].sort((a, b) => {
+      const rankA = getPriorityRank(a);
+      const rankB = getPriorityRank(b);
+
+      if (rankA !== 999 || rankB !== 999) {
+        if (rankA !== rankB) return rankA - rankB;
+      }
+
+      return b.total - a.total;
+    });
 
     sorted.forEach(item => {
-      const pct = totalAsset > 0 ? ((item.total / totalAsset) * 100).toFixed(1) : 0;
       const card = document.createElement('div');
       card.id = 'stock-card-' + item.code;
       card.className = "p-3 bg-slate-950/80 border border-slate-800 rounded-xl flex items-center justify-between hover:border-blue-500 transition-all duration-300";
       
+      // 3. 전일 대비 상승률 표시 (상승: RED, 하락: BLUE)
+      let changeHtml = '';
+      if (item.changeRate !== undefined && item.changeRate !== null) {
+        const rate = parseFloat(item.changeRate);
+        if (rate > 0) {
+          changeHtml = `<span class="text-xs font-extrabold text-red-500 font-mono">▲ +${rate.toFixed(2)}%</span>`;
+        } else if (rate < 0) {
+          changeHtml = `<span class="text-xs font-extrabold text-blue-500 font-mono">▼ ${rate.toFixed(2)}%</span>`;
+        } else {
+          changeHtml = `<span class="text-xs font-semibold text-slate-400 font-mono">0.00%</span>`;
+        }
+      } else {
+        changeHtml = `<span class="text-[11px] text-slate-500 font-mono">- %</span>`;
+      }
+
       card.innerHTML = `
         <div class="flex items-center gap-2.5">
-          <div class="w-1.5 h-8 rounded-full" style="background-color: ${item.color || '#3b82f6'}"></div>
+          <div class="w-1.5 h-10 rounded-full" style="background-color: ${item.color || '#3b82f6'}"></div>
           <div>
             <div class="text-xs font-bold text-slate-100 flex items-center gap-1.5">
               ${item.name}
               <span class="text-[10px] font-mono px-1 py-0.2 rounded bg-slate-900 text-slate-400 border border-slate-800">${item.code}</span>
             </div>
-            <div class="text-[11px] text-slate-400 mt-0.5">
-              보유 ${window.DashboardState.formatNumber(item.qty)}주 • 현재가 ${window.DashboardState.formatNumber(item.price)}원
+            <!-- 1. 종목 하단: '주'와 '만 원' 기준 동일 위치 수직 정렬 -->
+            <div class="flex items-center text-[11px] text-slate-400 mt-1 whitespace-nowrap">
+              <span class="text-slate-400 shrink-0">보유</span>
+              <span class="w-[45px] text-right font-mono font-medium text-slate-200 shrink-0">${window.DashboardState.formatNumber(item.qty)}</span>
+              <span class="text-slate-400 shrink-0 ml-1">주</span>
+              <span class="mx-2 text-slate-700 shrink-0">|</span>
+              <span class="text-slate-400 shrink-0">평가액</span>
+              <span class="w-[54px] text-right font-mono font-medium text-slate-200 shrink-0">${window.DashboardState.formatManWonNum(item.total)}</span>
+              <span class="text-slate-400 shrink-0 ml-1">만 원</span>
             </div>
           </div>
         </div>
-        <div class="text-right">
-          <div class="text-xs font-extrabold text-white font-mono">
-            ${window.DashboardState.formatNumber(item.total)}원
+        
+        <!-- 2. 우측: 현재가 크게 표시 & 3. 비중 삭제 후 전일 대비 상승률 표시 -->
+        <div class="text-right flex flex-col items-end justify-center shrink-0 ml-2">
+          <div class="text-sm font-extrabold text-white font-mono tracking-tight">
+            ${window.DashboardState.formatNumber(item.price)}원
           </div>
-          <div class="text-[11px] text-emerald-400 font-medium">
-            비중 ${pct}%
+          <div class="mt-0.5">
+            ${changeHtml}
           </div>
         </div>
       `;
