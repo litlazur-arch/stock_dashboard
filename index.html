@@ -89,12 +89,12 @@
     <!-- 대시보드 메인 콘텐츠 영역 -->
     <main id="mainContent" class="p-3 sm:p-3.5 space-y-4 overflow-y-auto hidden">
 
-      <!-- 1단: 최근 12개월 총 자산 막대그래프 -->
+      <!-- 1단: 최근 12개월 자산 막대그래프 -->
       <article class="bg-slate-50 border border-slate-200/90 rounded-xl p-3.5 sm:p-4 shadow-xs">
         <div class="flex items-center justify-between mb-3.5">
           <div class="flex items-center gap-2">
             <div class="w-2.5 h-4.5 rounded-full bg-blue-600"></div>
-            <h2 class="text-lg font-black text-slate-900">최근 12개월 총 자산</h2>
+            <h2 class="text-lg font-black text-slate-900">최근 12개월 자산</h2>
           </div>
           <span class="text-sm font-black text-blue-600" id="assetGrowthLabel">-</span>
         </div>
@@ -107,12 +107,12 @@
         </div>
       </article>
 
-      <!-- 2단: 동일 기간 배당금 수령액 막대그래프 -->
+      <!-- 2단: 배당금 막대그래프 -->
       <article class="bg-slate-50 border border-slate-200/90 rounded-xl p-3.5 sm:p-4 shadow-xs">
         <div class="flex items-center justify-between mb-3.5">
           <div class="flex items-center gap-2">
             <div class="w-2.5 h-4.5 rounded-full bg-amber-500"></div>
-            <h2 class="text-lg font-black text-slate-900">동일 기간 배당금 수령액</h2>
+            <h2 class="text-lg font-black text-slate-900">배당금</h2>
           </div>
           <span class="text-sm font-black text-amber-600" id="latestDividendLabel">-</span>
         </div>
@@ -125,7 +125,20 @@
         </div>
       </article>
 
-      <!-- 3단: 보유 종목 비율 트리맵 (Treemap) -->
+      <!-- 3단: 보유 종목 상세 리스트 카드 -->
+      <article class="bg-slate-50 border border-slate-200/90 rounded-xl p-3.5 sm:p-4 shadow-xs">
+        <div class="flex items-center justify-between mb-3.5">
+          <div class="flex items-center gap-2">
+            <div class="w-2.5 h-4.5 rounded-full bg-emerald-600"></div>
+            <h2 class="text-lg font-black text-slate-900">보유 종목</h2>
+          </div>
+        </div>
+
+        <div class="space-y-2.5" id="stockListContainer">
+        </div>
+      </article>
+
+      <!-- 4단: 보유 종목 비율 트리맵 (Treemap) -->
       <article class="bg-slate-50 border border-slate-200/90 rounded-xl p-3.5 sm:p-4 shadow-xs">
         <div class="flex items-center justify-between mb-3.5">
           <div class="flex items-center gap-2">
@@ -142,21 +155,8 @@
 
         <!-- 안내 캡션 -->
         <div class="flex items-center justify-between text-xs text-slate-500 mt-2.5 px-0.5">
-          <span>💡 타일 터치 시 하단 종목 카드로 이동</span>
+          <span>💡 타일 터치 시 해당 종목 카드로 이동</span>
           <span class="text-indigo-600 font-bold">면적 = 평가액 비중</span>
-        </div>
-      </article>
-
-      <!-- 4단: 보유 종목 상세 리스트 카드 -->
-      <article class="bg-slate-50 border border-slate-200/90 rounded-xl p-3.5 sm:p-4 shadow-xs">
-        <div class="flex items-center justify-between mb-3.5">
-          <div class="flex items-center gap-2">
-            <div class="w-2.5 h-4.5 rounded-full bg-emerald-600"></div>
-            <h2 class="text-lg font-black text-slate-900">보유 종목 상세 리스트</h2>
-          </div>
-        </div>
-
-        <div class="space-y-2.5" id="stockListContainer">
         </div>
       </article>
 

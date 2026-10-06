@@ -118,6 +118,11 @@ window.DashboardApp = {
       return { month: row.month, asset, div };
     });
 
+    // 당월(가장 최근 월)의 자산 평가액은 실시간 현재가 합산 금액(currentTotalAsset)으로 실시간 동기화
+    if (historyData.length > 0 && currentTotalAsset > 0) {
+      historyData[historyData.length - 1].asset = currentTotalAsset;
+    }
+
     // 12개월 성장률 레이블
     const growthEl = document.getElementById('assetGrowthLabel');
     if (historyData.length >= 2 && historyData[0].asset > 0) {
