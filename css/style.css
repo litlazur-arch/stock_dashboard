@@ -12,16 +12,16 @@
   scrollbar-width: none;
 }
 
-/* 다크 테마 커스텀 색상 변수 */
+/* 라이트 테마 커스텀 색상 변수 */
 :root {
-  --bg-main: #0b1120;
-  --bg-card: #0f172a;
-  --bg-subcard: rgba(15, 23, 42, 0.7);
-  --border-color: #1e293b;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --primary-blue: #3b82f6;
-  --accent-amber: #f59e0b;
+  --bg-main: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-subcard: #f1f5f9;
+  --border-color: #e2e8f0;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --primary-blue: #2563eb;
+  --accent-amber: #d97706;
 }
 
 /* 터치 디바이스 탭 효과 최적화 */

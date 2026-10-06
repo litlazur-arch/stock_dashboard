@@ -18,6 +18,9 @@ window.DashboardApp = {
       window.DashboardState.currentUser = 'j';
     }
 
+    // Default로 첫번째 보여주는 메뉴는 위탁 계좌(인덱스 1)로 설정
+    window.DashboardState.currentAccountIndex = 1;
+
     window.DashboardUI.updateUserSwitcher(window.DashboardState.currentUser);
 
     // 2. 화면 리사이즈 시 차트 자동 재조정
@@ -59,7 +62,7 @@ window.DashboardApp = {
    */
   setUser(userCode) {
     window.DashboardState.currentUser = userCode;
-    window.DashboardState.currentAccountIndex = 0; // 첫 번째 탭(통합)으로 초기화
+    window.DashboardState.currentAccountIndex = 1; // 기본 탭: 위탁 계좌로 설정
     window.DashboardUI.updateUserSwitcher(userCode);
     this.renderCurrentView();
   },

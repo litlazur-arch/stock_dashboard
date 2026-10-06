@@ -1,12 +1,12 @@
 {
-  "name": "가족 주식 & 배당금 대시보드",
-  "short_name": "주식대시보드",
+  "name": "SPI2 Dashboard",
+  "short_name": "SPI2",
   "description": "실시간 주가 및 최근 12개월 자산/배당금 추이 모바일 대시보드",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0b1120",
-  "theme_color": "#0b1120",
+  "background_color": "#f8fafc",
+  "theme_color": "#f8fafc",
   "orientation": "portrait-primary",
   "icons": [
     {

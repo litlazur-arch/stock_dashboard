@@ -9,8 +9,8 @@ window.DashboardState = {
   // 현재 선택된 사용자: 'j' (내 계좌) 또는 'k' (배우자 계좌)
   currentUser: 'j',
   
-  // 현재 선택된 계좌 탭 인덱스 (0: 통합, 1: 첫 번째 계좌 ...)
-  currentAccountIndex: 0,
+  // 현재 선택된 계좌 탭 인덱스 (기본값: 1 - 위탁 계좌)
+  currentAccountIndex: 1,
   
   // API로부터 수신한 원본 데이터
   rawData: null,

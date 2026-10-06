@@ -85,7 +85,7 @@ window.DashboardCharts = {
       text.setAttribute("text-anchor", "middle");
       text.setAttribute("font-size", "10");
       text.setAttribute("font-weight", isJanuary ? "700" : "600");
-      text.setAttribute("fill", isJanuary ? "#f8fafc" : "#cbd5e1");
+      text.setAttribute("fill", isJanuary ? "#0f172a" : "#64748b");
       text.textContent = labelText;
       svg.appendChild(text);
     });
@@ -145,7 +145,7 @@ window.DashboardCharts = {
       text.setAttribute("text-anchor", "middle");
       text.setAttribute("font-size", "10");
       text.setAttribute("font-weight", isJanuary ? "700" : "600");
-      text.setAttribute("fill", isJanuary ? "#f8fafc" : "#cbd5e1");
+      text.setAttribute("fill", isJanuary ? "#0f172a" : "#64748b");
       text.textContent = labelText;
       svg.appendChild(text);
     });
