@@ -83,9 +83,10 @@ window.DashboardCharts = {
       text.setAttribute("x", x + barWidth / 2);
       text.setAttribute("y", height - 4);
       text.setAttribute("text-anchor", "middle");
-      text.setAttribute("font-size", "10");
-      text.setAttribute("font-weight", isJanuary ? "700" : "600");
-      text.setAttribute("fill", isJanuary ? "#0f172a" : "#64748b");
+      text.setAttribute("font-size", "11");
+      text.setAttribute("font-weight", isJanuary ? "800" : "700");
+      text.setAttribute("fill", isJanuary ? "#0f172a" : "#475569");
+      text.setAttribute("font-family", "Pretendard, -apple-system, sans-serif");
       text.textContent = labelText;
       svg.appendChild(text);
     });
@@ -143,9 +144,10 @@ window.DashboardCharts = {
       text.setAttribute("x", x + barWidth / 2);
       text.setAttribute("y", height - 4);
       text.setAttribute("text-anchor", "middle");
-      text.setAttribute("font-size", "10");
-      text.setAttribute("font-weight", isJanuary ? "700" : "600");
-      text.setAttribute("fill", isJanuary ? "#0f172a" : "#64748b");
+      text.setAttribute("font-size", "11");
+      text.setAttribute("font-weight", isJanuary ? "800" : "700");
+      text.setAttribute("fill", isJanuary ? "#0f172a" : "#475569");
+      text.setAttribute("font-family", "Pretendard, -apple-system, sans-serif");
       text.textContent = labelText;
       svg.appendChild(text);
     });
@@ -192,23 +194,23 @@ window.DashboardCharts = {
       // 마우스 오버 / 터치 툴팁
       el.title = `${tile.name}: ${tile.pct}% (${window.DashboardState.formatNumber(tile.total)}원)`;
 
-      // 스마트 텍스트 표시 (금액 제거, 종목명 및 퍼센트 유지, 가독성 향상)
+      // 스마트 텍스트 표시 (금액 제거, 종목명 및 퍼센트 유지, Pretendard 가독성 최적화)
       if (tile.w >= 48 && tile.h >= 32) {
         // 중·대형 타일: 종목명 + 비중(%)
         el.innerHTML = `
-          <div class="font-bold text-xs text-white truncate max-w-full leading-tight drop-shadow-xs px-0.5">${tile.name}</div>
-          <div class="text-[13px] font-black text-white/95 font-mono mt-0.5 drop-shadow-xs">${tile.pct}%</div>
+          <div class="font-extrabold text-xs sm:text-[13px] text-white truncate max-w-full leading-tight drop-shadow px-0.5">${tile.name}</div>
+          <div class="text-sm font-black text-white font-mono mt-0.5 drop-shadow tracking-tight">${tile.pct}%</div>
         `;
       } else if (tile.w >= 36 && tile.h >= 24) {
         // 소형 타일: 종목명(작게) + 비중(%)
         el.innerHTML = `
-          <div class="font-bold text-[11px] text-white truncate max-w-full leading-tight drop-shadow-xs px-0.5">${tile.name}</div>
-          <div class="text-[11px] font-bold text-white/90 font-mono drop-shadow-xs">${tile.pct}%</div>
+          <div class="font-bold text-[11px] sm:text-xs text-white truncate max-w-full leading-tight drop-shadow px-0.5">${tile.name}</div>
+          <div class="text-xs font-black text-white/95 font-mono drop-shadow">${tile.pct}%</div>
         `;
       } else if (tile.w >= 28 && tile.h >= 18) {
         // 극소형 직전 타일: 비중만 표시
         el.innerHTML = `
-          <div class="font-bold text-[10px] text-white/90 truncate max-w-full drop-shadow-xs">${tile.pct}%</div>
+          <div class="font-black text-[11px] text-white font-mono truncate max-w-full drop-shadow">${tile.pct}%</div>
         `;
       } else {
         // 극소형 타일: 글자 숨김 (색상 타일만 표시, 툴팁 및 터치 지원)
