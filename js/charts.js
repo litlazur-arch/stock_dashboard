@@ -84,8 +84,8 @@ window.DashboardCharts = {
       text.setAttribute("y", height - 4);
       text.setAttribute("text-anchor", "middle");
       text.setAttribute("font-size", "11");
-      text.setAttribute("font-weight", isJanuary ? "800" : "700");
-      text.setAttribute("fill", isJanuary ? "#0f172a" : "#475569");
+      text.setAttribute("font-weight", isJanuary ? "700" : "500");
+      text.setAttribute("fill", isJanuary ? "#0f172a" : "#64748b");
       text.setAttribute("font-family", "Pretendard, -apple-system, sans-serif");
       text.textContent = labelText;
       svg.appendChild(text);
@@ -145,8 +145,8 @@ window.DashboardCharts = {
       text.setAttribute("y", height - 4);
       text.setAttribute("text-anchor", "middle");
       text.setAttribute("font-size", "11");
-      text.setAttribute("font-weight", isJanuary ? "800" : "700");
-      text.setAttribute("fill", isJanuary ? "#0f172a" : "#475569");
+      text.setAttribute("font-weight", isJanuary ? "700" : "500");
+      text.setAttribute("fill", isJanuary ? "#0f172a" : "#64748b");
       text.setAttribute("font-family", "Pretendard, -apple-system, sans-serif");
       text.textContent = labelText;
       svg.appendChild(text);
@@ -198,19 +198,19 @@ window.DashboardCharts = {
       if (tile.w >= 48 && tile.h >= 32) {
         // 중·대형 타일: 종목명 + 비중(%)
         el.innerHTML = `
-          <div class="font-extrabold text-xs sm:text-[13px] text-white truncate max-w-full leading-tight drop-shadow px-0.5">${tile.name}</div>
-          <div class="text-sm font-black text-white font-mono mt-0.5 drop-shadow tracking-tight">${tile.pct}%</div>
+          <div class="font-semibold text-xs sm:text-[13px] text-white truncate max-w-full leading-tight drop-shadow px-0.5">${tile.name}</div>
+          <div class="text-sm font-bold text-white font-mono mt-0.5 drop-shadow tracking-tight">${tile.pct}%</div>
         `;
       } else if (tile.w >= 36 && tile.h >= 24) {
         // 소형 타일: 종목명(작게) + 비중(%)
         el.innerHTML = `
-          <div class="font-bold text-[11px] sm:text-xs text-white truncate max-w-full leading-tight drop-shadow px-0.5">${tile.name}</div>
-          <div class="text-xs font-black text-white/95 font-mono drop-shadow">${tile.pct}%</div>
+          <div class="font-medium text-[11px] sm:text-xs text-white truncate max-w-full leading-tight drop-shadow px-0.5">${tile.name}</div>
+          <div class="text-xs font-semibold text-white/95 font-mono drop-shadow">${tile.pct}%</div>
         `;
       } else if (tile.w >= 28 && tile.h >= 18) {
         // 극소형 직전 타일: 비중만 표시
         el.innerHTML = `
-          <div class="font-black text-[11px] text-white font-mono truncate max-w-full drop-shadow">${tile.pct}%</div>
+          <div class="font-semibold text-[11px] text-white font-mono truncate max-w-full drop-shadow">${tile.pct}%</div>
         `;
       } else {
         // 극소형 타일: 글자 숨김 (색상 타일만 표시, 툴팁 및 터치 지원)
