@@ -31,7 +31,7 @@ window.DashboardUI = {
 
       if (isTotal) {
         const badgeBg = isActive ? "bg-blue-100 text-blue-700 font-black" : "bg-slate-200 text-slate-500 font-bold";
-        btn.innerHTML = `<span class="px-1 py-0.2 rounded text-[9px] ${badgeBg}">ALL</span><span>${acc.name}</span>`;
+        btn.innerHTML = `<span class="px-1 py-0.2 rounded text-xs ${badgeBg}">ALL</span><span>${acc.name}</span>`;
       } else {
         btn.innerText = acc.name;
       }
@@ -106,30 +106,31 @@ window.DashboardUI = {
       card.id = 'stock-card-' + item.code;
       card.className = "p-2.5 sm:p-3 bg-white border border-slate-200/90 rounded-xl flex items-center justify-between hover:border-blue-400 hover:shadow-xs transition-all duration-300 shadow-2xs";
       
-      // 3. 전일 대비 상승률 표시 (상승: RED, 하락: BLUE, 14px)
+      // 3. 전일 대비 상승률 표시 (14px: text-sm)
       let changeHtml = '';
       if (item.changeRate !== undefined && item.changeRate !== null) {
         const rate = parseFloat(item.changeRate);
         if (rate > 0) {
-          changeHtml = `<span class="text-sm sm:text-base font-bold text-red-600 tabular-nums tracking-tight">▲ +${rate.toFixed(2)}%</span>`;
+          changeHtml = `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight">▲ +${rate.toFixed(2)}%</span>`;
         } else if (rate < 0) {
-          changeHtml = `<span class="text-sm sm:text-base font-bold text-blue-600 tabular-nums tracking-tight">▼ ${rate.toFixed(2)}%</span>`;
+          changeHtml = `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight">▼ ${rate.toFixed(2)}%</span>`;
         } else {
-          changeHtml = `<span class="text-sm sm:text-base font-medium text-slate-500 tabular-nums tracking-tight">0.00%</span>`;
+          changeHtml = `<span class="text-sm font-medium text-slate-500 tabular-nums tracking-tight">0.00%</span>`;
         }
       } else {
-        changeHtml = `<span class="text-sm sm:text-base text-slate-400 tabular-nums tracking-tight">- %</span>`;
+        changeHtml = `<span class="text-sm text-slate-400 tabular-nums tracking-tight">- %</span>`;
       }
 
       card.innerHTML = `
         <div class="flex items-center gap-2.5 min-w-0">
           <div class="w-1.5 h-10 rounded-full shrink-0" style="background-color: ${item.color || '#3b82f6'}"></div>
           <div class="min-w-0">
-            <div class="text-base sm:text-lg font-bold text-slate-900 truncate tracking-tight">
+            <!-- 종목명 (16px: text-base) -->
+            <div class="text-base font-bold text-slate-900 truncate tracking-tight">
               ${item.name}
             </div>
-            <!-- 수량 & 평가액 ('평가액' 텍스트 제거, '주'와 '만원' 열 완벽 일치 정렬) -->
-            <div class="flex items-center text-xs sm:text-sm text-slate-500 mt-1 whitespace-nowrap">
+            <!-- 수량 & 평가액 (12px: text-xs) -->
+            <div class="flex items-center text-xs text-slate-500 mt-1 whitespace-nowrap">
               <span class="w-[34px] sm:w-[40px] text-right tabular-nums tracking-tight font-semibold text-slate-800 shrink-0">${window.DashboardState.formatNumber(item.qty)}</span>
               <span class="text-slate-400 shrink-0 ml-0.5">주</span>
               <span class="w-[52px] sm:w-[58px] text-right tabular-nums tracking-tight font-semibold text-slate-800 shrink-0 ml-3 sm:ml-4">${window.DashboardState.formatManWonNum(item.total)}</span>
@@ -138,9 +139,9 @@ window.DashboardUI = {
           </div>
         </div>
         
-        <!-- 우측: 현재가 크게 표시 & 전일 대비 상승률(14px) -->
+        <!-- 우측: 현재가 (16px: text-base) & 전일 대비 상승률 (14px: text-sm) -->
         <div class="text-right flex flex-col items-end justify-center shrink-0 ml-2">
-          <div class="text-base sm:text-lg font-bold text-slate-900 tabular-nums tracking-tight">
+          <div class="text-base font-bold text-slate-900 tabular-nums tracking-tight">
             ${window.DashboardState.formatNumber(item.price)}원
           </div>
           <div class="mt-0.5">

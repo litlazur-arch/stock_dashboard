@@ -83,7 +83,7 @@ window.DashboardCharts = {
       text.setAttribute("x", x + barWidth / 2);
       text.setAttribute("y", height - 4);
       text.setAttribute("text-anchor", "middle");
-      text.setAttribute("font-size", "11");
+      text.setAttribute("font-size", "12");
       text.setAttribute("font-weight", isJanuary ? "700" : "500");
       text.setAttribute("fill", isJanuary ? "#0f172a" : "#64748b");
       text.setAttribute("font-family", "Pretendard, -apple-system, sans-serif");
@@ -133,7 +133,7 @@ window.DashboardCharts = {
       rect.appendChild(title);
       svg.appendChild(rect);
 
-      // X축 레이블 (12개월 누락 없이 모두 표시, 1월은 연도 포함)
+      // X축 레이블 (12개월 누락 없이 모두 표시, 1월은 연도 포함, 12px)
       const parts = (item.month || "").split('.');
       const yearStr = parts[0] || "";
       const monthNum = parseInt(parts[1], 10);
@@ -144,7 +144,7 @@ window.DashboardCharts = {
       text.setAttribute("x", x + barWidth / 2);
       text.setAttribute("y", height - 4);
       text.setAttribute("text-anchor", "middle");
-      text.setAttribute("font-size", "11");
+      text.setAttribute("font-size", "12");
       text.setAttribute("font-weight", isJanuary ? "700" : "500");
       text.setAttribute("fill", isJanuary ? "#0f172a" : "#64748b");
       text.setAttribute("font-family", "Pretendard, -apple-system, sans-serif");
@@ -194,26 +194,26 @@ window.DashboardCharts = {
       // 마우스 오버 / 터치 툴팁
       el.title = `${tile.name}: ${tile.pct}% (${window.DashboardState.formatNumber(tile.total)}원)`;
 
-      // 스마트 텍스트 표시 (금액 제거, 종목명 및 퍼센트 유지, Pretendard 가독성 최적화)
+      // 스마트 텍스트 표시 (규격화된 12px / 14px 적용)
       if (tile.w >= 48 && tile.h >= 32) {
-        // 중·대형 타일: 종목명 + 비중(%)
+        // 중·대형 타일: 종목명(12px) + 비중(14px: text-sm)
         el.innerHTML = `
-          <div class="font-semibold text-xs sm:text-[13px] text-white truncate max-w-full leading-tight drop-shadow px-0.5">${tile.name}</div>
+          <div class="font-semibold text-xs text-white truncate max-w-full leading-tight drop-shadow px-0.5">${tile.name}</div>
           <div class="text-sm font-bold text-white tabular-nums mt-0.5 drop-shadow tracking-tight">${tile.pct}%</div>
         `;
       } else if (tile.w >= 36 && tile.h >= 24) {
-        // 소형 타일: 종목명(작게) + 비중(%)
+        // 소형 타일: 종목명(12px) + 비중(12px)
         el.innerHTML = `
-          <div class="font-medium text-[11px] sm:text-xs text-white truncate max-w-full leading-tight drop-shadow px-0.5">${tile.name}</div>
+          <div class="font-medium text-xs text-white truncate max-w-full leading-tight drop-shadow px-0.5">${tile.name}</div>
           <div class="text-xs font-semibold text-white/95 tabular-nums drop-shadow tracking-tight">${tile.pct}%</div>
         `;
       } else if (tile.w >= 28 && tile.h >= 18) {
-        // 극소형 직전 타일: 비중만 표시
+        // 극소형 직전 타일: 비중만 표시 (12px)
         el.innerHTML = `
-          <div class="font-semibold text-[11px] text-white tabular-nums truncate max-w-full drop-shadow tracking-tight">${tile.pct}%</div>
+          <div class="font-semibold text-xs text-white tabular-nums truncate max-w-full drop-shadow tracking-tight">${tile.pct}%</div>
         `;
       } else {
-        // 극소형 타일: 글자 숨김 (색상 타일만 표시, 툴팁 및 터치 지원)
+        // 극소형 타일: 글자 숨김
         el.innerHTML = '';
       }
 
