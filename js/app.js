@@ -23,8 +23,14 @@ window.DashboardApp = {
 
     window.DashboardUI.updateUserSwitcher(window.DashboardState.currentUser);
 
-    // 2. 화면 리사이즈 시 차트 자동 재조정
-    window.addEventListener('resize', () => this.renderCurrentView());
+    // 2. 화면 리사이즈 시 차트 자동 재조정 (100ms 디바운스 적용)
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        this.renderCurrentView();
+      }, 100);
+    });
 
     // 3. [Stale-While-Revalidate] 캐시 데이터 우선 렌더링 (0.0초 즉시 표시)
     const cached = window.DashboardState.loadCachedData();

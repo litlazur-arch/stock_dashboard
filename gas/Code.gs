@@ -185,7 +185,9 @@ function fetchStockPollingData(codes) {
         for (var i = 0; i < datas.length; i++) {
           var d = datas[i];
           var rate = parseFloat(d.cr) || 0;
-          if (d.rf === "5") rate = -rate;
+          if (d.rf === "5" || d.rf === "4") {
+            rate = -Math.abs(rate);
+          }
           marketMap[d.cd] = {
             basePrice: d.sv,
             currentPrice: d.nv,

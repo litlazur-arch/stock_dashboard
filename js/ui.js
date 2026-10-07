@@ -103,7 +103,8 @@ window.DashboardUI = {
 
     sorted.forEach(item => {
       const card = document.createElement('div');
-      card.id = 'stock-card-' + item.code;
+      card.id = 'stock-card-' + (item.account ? (item.account + '-') : '') + item.code;
+      card.setAttribute('data-stock-code', item.code);
       card.className = "p-2.5 sm:p-3 bg-white border border-slate-200/90 rounded-xl flex items-center justify-between hover:border-blue-400 hover:shadow-xs transition-all duration-300 shadow-2xs cursor-pointer active:scale-[0.99]";
       card.onclick = () => this.openStockModal(item, totalAsset);
       

@@ -31,8 +31,10 @@ window.DashboardCharts = {
     const barWidth = Math.max(12, (width / history.length) - 6);
 
     // 요약 레이블 업데이트
-    document.getElementById(minId).innerText = window.DashboardState.formatKoreanMoney(Math.min(...assets)) + '원';
-    document.getElementById(maxId).innerText = window.DashboardState.formatKoreanMoney(maxVal) + '원';
+    const minEl = document.getElementById(minId);
+    if (minEl) minEl.innerText = window.DashboardState.formatKoreanMoney(Math.min(...assets)) + '원';
+    const maxEl = document.getElementById(maxId);
+    if (maxEl) maxEl.innerText = window.DashboardState.formatKoreanMoney(maxVal) + '원';
 
     history.forEach((item, idx) => {
       const x = idx * (width / history.length) + (width / history.length - barWidth) / 2;
@@ -108,11 +110,15 @@ window.DashboardCharts = {
     const barWidth = Math.max(12, (width / history.length) - 6);
 
     const latestDiv = divs[divs.length - 1] || 0;
-    document.getElementById(latestId).innerText = `당월 ${window.DashboardState.formatKoreanMoney(latestDiv)}원`;
+    const latestEl = document.getElementById(latestId);
+    if (latestEl) latestEl.innerText = `당월 ${window.DashboardState.formatKoreanMoney(latestDiv)}원`;
 
     const totalYear = divs.reduce((sum, v) => sum + v, 0);
-    document.getElementById(totalYearId).innerText = `${window.DashboardState.formatKoreanMoney(totalYear)}원`;
-    document.getElementById(avgId).innerText = `${window.DashboardState.formatKoreanMoney(Math.round(totalYear / 12))}원`;
+    const totalYearEl = document.getElementById(totalYearId);
+    if (totalYearEl) totalYearEl.innerText = `${window.DashboardState.formatKoreanMoney(totalYear)}원`;
+    
+    const avgEl = document.getElementById(avgId);
+    if (avgEl) avgEl.innerText = `${window.DashboardState.formatKoreanMoney(Math.round(totalYear / 12))}원`;
 
     history.forEach((item, idx) => {
       const x = idx * (width / history.length) + (width / history.length - barWidth) / 2;
@@ -219,8 +225,11 @@ window.DashboardCharts = {
 
       // 클릭 시 하단 종목 카드로 스크롤 및 하이라이트 효과
       el.addEventListener('click', () => {
-        const cardId = 'stock-card-' + tile.code;
-        const targetCard = document.getElementById(cardId);
+        const cardId = 'stock-card-' + (tile.account ? (tile.account + '-') : '') + tile.code;
+        let targetCard = document.getElementById(cardId);
+        if (!targetCard) {
+          targetCard = document.querySelector(`[id$="-${tile.code}"], [id="stock-card-${tile.code}"]`);
+        }
         if (targetCard) {
           targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
           targetCard.classList.add('ring-2', 'ring-indigo-400', 'bg-indigo-950/60');
@@ -260,6 +269,7 @@ window.DashboardCharts = {
       const s = row.reduce((sum, el) => sum + el.area, 0);
       if (s === 0 || sideLength === 0) return Infinity;
       const h = s / sideLength;
+      if (h === 0) return Infinity;
       let worst = 0;
       for (const el of row) {
         const w = el.area / h;
@@ -365,7 +375,7 @@ window.DashboardCharts = {
 
     const firstP = prices[0];
     const lastP = prices[prices.length - 1];
-    const diffPct = (((lastP - firstP) / firstP) * 100);
+    const diffPct = firstP > 0 ? (((lastP - firstP) / firstP) * 100) : 0;
     const isUp = diffPct >= 0;
     const strokeColor = isUp ? "#ef4444" : "#3b82f6";
     const gradId = `sparkGrad_${Math.random().toString(36).substr(2, 6)}`;
