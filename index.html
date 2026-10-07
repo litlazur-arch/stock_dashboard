@@ -177,6 +177,79 @@
 
   </div>
 
+  <!-- 종목 상세 인앱 바텀시트 모달 (In-App Bottom Sheet Modal) -->
+  <div id="stockModalBackdrop" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 transition-opacity duration-300 opacity-0 pointer-events-none flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div id="stockModalCard" class="w-full max-w-[480px] bg-white border border-slate-200 rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl transition-all duration-300 transform translate-y-full sm:translate-y-4 sm:scale-95 space-y-4 max-h-[90vh] overflow-y-auto">
+      
+      <!-- 1. 상단 타이틀 & 닫기 버튼 -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-3.5 h-3.5 rounded-full shrink-0" id="modalColorDot"></div>
+          <div>
+            <h3 class="text-lg font-bold text-slate-900 leading-tight" id="modalStockName">-</h3>
+            <span class="text-xs text-slate-400 tabular-nums" id="modalStockCode">-</span>
+          </div>
+        </div>
+        <button onclick="window.DashboardUI.closeStockModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold flex items-center justify-center transition-colors">
+          ✕
+        </button>
+      </div>
+
+      <!-- 2. 현재가 & 전일 대비 등락률 -->
+      <div class="flex items-baseline justify-between border-y border-slate-100 py-3">
+        <div>
+          <div class="text-xs text-slate-400">현재가</div>
+          <div class="text-2xl font-bold text-slate-900 tabular-nums tracking-tight" id="modalPrice">-원</div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-slate-400">전일 대비</div>
+          <div class="text-base font-bold tabular-nums mt-0.5" id="modalChangeRate">-</div>
+        </div>
+      </div>
+
+      <!-- 3. 최근 5일 주가 추이 미니 스파크라인 차트 -->
+      <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-700">최근 5일 주가 추이</span>
+          <span class="text-xs font-semibold tabular-nums" id="modalSparklineDiff">-</span>
+        </div>
+        <div class="h-20 w-full relative">
+          <svg class="w-full h-full overflow-visible" id="modalSparklineSvg"></svg>
+        </div>
+        <div class="flex justify-between items-center text-[10px] text-slate-400 px-1 pt-1 border-t border-slate-200/60" id="modalSparklineDays">
+          <span>D-4</span><span>D-3</span><span>D-2</span><span>D-1</span><span class="font-bold text-slate-700">오늘</span>
+        </div>
+      </div>
+
+      <!-- 4. 보유 현황 요약 (수량, 평가금액, 비중) -->
+      <div class="grid grid-cols-3 gap-2 bg-slate-50 border border-slate-100 p-3 rounded-xl text-center">
+        <div>
+          <div class="text-xs text-slate-400">보유 수량</div>
+          <div class="text-sm font-bold text-slate-800 tabular-nums mt-0.5" id="modalQty">-주</div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-400">평가 금액</div>
+          <div class="text-sm font-bold text-slate-800 tabular-nums mt-0.5" id="modalTotal">-만원</div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-400">계좌 내 비중</div>
+          <div class="text-sm font-bold text-indigo-600 tabular-nums mt-0.5" id="modalRatio">-%</div>
+        </div>
+      </div>
+
+      <!-- 5. 네이버 페이 증권 외부 바로가기 버튼 -->
+      <a id="modalNaverLink" href="#" target="_blank" rel="noopener noreferrer"
+        class="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-center flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]">
+        <span class="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center font-black text-[10px]">N</span>
+        <span class="text-xs">네이버 페이 증권에서 더보기</span>
+        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+        </svg>
+      </a>
+
+    </div>
+  </div>
+
   <!-- 3. 모듈화된 자바스크립트 로드 순서 -->
   <script src="./js/api.js"></script>
   <script src="./js/state.js"></script>

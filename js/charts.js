@@ -344,5 +344,114 @@ window.DashboardCharts = {
    */
   renderRatioBar(holdings, totalAsset, barId, legendId, countBadgeId) {
     this.renderRatioTreemap(holdings, totalAsset, barId, countBadgeId);
+  },
+
+  /**
+   * 종목 상세 바텀시트용 최근 5일 초경량 SVG 스파크라인 추세선 렌더링 (0.0초 렌더링)
+   */
+  renderStockSparkline(prices, svgId, diffId) {
+    const svg = document.getElementById(svgId);
+    if (!svg || !prices || prices.length < 2) return;
+    svg.innerHTML = '';
+
+    const width = svg.clientWidth || 320;
+    const height = svg.clientHeight || 80;
+    const padX = 14;
+    const padY = 12;
+
+    const minP = Math.min(...prices);
+    const maxP = Math.max(...prices);
+    const range = (maxP - minP) || 1;
+
+    const firstP = prices[0];
+    const lastP = prices[prices.length - 1];
+    const diffPct = (((lastP - firstP) / firstP) * 100);
+    const isUp = diffPct >= 0;
+    const strokeColor = isUp ? "#ef4444" : "#3b82f6";
+    const gradId = `sparkGrad_${Math.random().toString(36).substr(2, 6)}`;
+
+    // 5일 변동률 배지 업데이트
+    const diffEl = document.getElementById(diffId);
+    if (diffEl) {
+      if (diffPct > 0) {
+        diffEl.className = "text-xs font-bold text-red-600 tabular-nums";
+        diffEl.innerText = `5일간 ▲ +${diffPct.toFixed(2)}%`;
+      } else if (diffPct < 0) {
+        diffEl.className = "text-xs font-bold text-blue-600 tabular-nums";
+        diffEl.innerText = `5일간 ▼ ${diffPct.toFixed(2)}%`;
+      } else {
+        diffEl.className = "text-xs font-bold text-slate-500 tabular-nums";
+        diffEl.innerText = `5일간 0.00%`;
+      }
+    }
+
+    // Points 계산
+    const points = prices.map((p, idx) => {
+      const x = padX + (idx / (prices.length - 1)) * (width - padX * 2);
+      const y = height - padY - ((p - minP) / range) * (height - padY * 2);
+      return { x, y, price: p, day: idx === prices.length - 1 ? '오늘' : `D-${prices.length - 1 - idx}` };
+    });
+
+    // SVG Defs (그라데이션)
+    const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+    const linearGrad = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient");
+    linearGrad.setAttribute("id", gradId);
+    linearGrad.setAttribute("x1", "0");
+    linearGrad.setAttribute("y1", "0");
+    linearGrad.setAttribute("x2", "0");
+    linearGrad.setAttribute("y2", "1");
+
+    const stop1 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    stop1.setAttribute("offset", "0%");
+    stop1.setAttribute("stop-color", strokeColor);
+    stop1.setAttribute("stop-opacity", "0.28");
+
+    const stop2 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+    stop2.setAttribute("offset", "100%");
+    stop2.setAttribute("stop-color", strokeColor);
+    stop2.setAttribute("stop-opacity", "0.0");
+
+    linearGrad.appendChild(stop1);
+    linearGrad.appendChild(stop2);
+    defs.appendChild(linearGrad);
+    svg.appendChild(defs);
+
+    // Area Path
+    let dLine = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 1; i < points.length; i++) {
+      dLine += ` L ${points[i].x} ${points[i].y}`;
+    }
+    const dArea = `${dLine} L ${points[points.length - 1].x} ${height} L ${points[0].x} ${height} Z`;
+
+    const areaPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    areaPath.setAttribute("d", dArea);
+    areaPath.setAttribute("fill", `url(#${gradId})`);
+    svg.appendChild(areaPath);
+
+    const linePath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    linePath.setAttribute("d", dLine);
+    linePath.setAttribute("fill", "none");
+    linePath.setAttribute("stroke", strokeColor);
+    linePath.setAttribute("stroke-width", "2.5");
+    linePath.setAttribute("stroke-linecap", "round");
+    linePath.setAttribute("stroke-linejoin", "round");
+    svg.appendChild(linePath);
+
+    // High & Low Labels & Dots
+    points.forEach((pt) => {
+      const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      circle.setAttribute("cx", pt.x);
+      circle.setAttribute("cy", pt.y);
+      circle.setAttribute("r", pt.day === '오늘' ? "4.5" : "3");
+      circle.setAttribute("fill", pt.day === '오늘' ? strokeColor : "#ffffff");
+      circle.setAttribute("stroke", strokeColor);
+      circle.setAttribute("stroke-width", "2");
+      circle.setAttribute("class", "cursor-pointer transition-transform hover:scale-125");
+
+      const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+      title.textContent = `${pt.day}: ${window.DashboardState.formatNumber(pt.price)}원`;
+      circle.appendChild(title);
+      svg.appendChild(circle);
+    });
   }
 };

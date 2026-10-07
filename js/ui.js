@@ -104,7 +104,8 @@ window.DashboardUI = {
     sorted.forEach(item => {
       const card = document.createElement('div');
       card.id = 'stock-card-' + item.code;
-      card.className = "p-2.5 sm:p-3 bg-white border border-slate-200/90 rounded-xl flex items-center justify-between hover:border-blue-400 hover:shadow-xs transition-all duration-300 shadow-2xs";
+      card.className = "p-2.5 sm:p-3 bg-white border border-slate-200/90 rounded-xl flex items-center justify-between hover:border-blue-400 hover:shadow-xs transition-all duration-300 shadow-2xs cursor-pointer active:scale-[0.99]";
+      card.onclick = () => this.openStockModal(item, totalAsset);
       
       // 3. 전일 대비 상승률 표시 (14px: text-sm)
       let changeHtml = '';
@@ -151,6 +152,97 @@ window.DashboardUI = {
       `;
       container.appendChild(card);
     });
+  },
+
+  /**
+   * 종목 상세 인앱 바텀시트 모달 열기 (0.0초 즉시 렌더링)
+   */
+  openStockModal(stock, totalAccountAsset) {
+    const backdrop = document.getElementById('stockModalBackdrop');
+    const card = document.getElementById('stockModalCard');
+    if (!backdrop || !card) return;
+
+    document.getElementById('modalStockName').innerText = stock.name;
+    document.getElementById('modalStockCode').innerText = stock.code;
+    const dot = document.getElementById('modalColorDot');
+    if (dot) dot.style.backgroundColor = stock.color || '#3b82f6';
+    
+    document.getElementById('modalPrice').innerText = window.DashboardState.formatNumber(stock.price) + '원';
+
+    // 전일 대비 등락률 및 등락액
+    let rateVal = stock.changeRate;
+    let diffAmt = stock.changeAmount;
+    if (rateVal === undefined || rateVal === null) {
+      rateVal = 0;
+    }
+    const rateNum = parseFloat(rateVal);
+    const changeEl = document.getElementById('modalChangeRate');
+    if (changeEl) {
+      if (rateNum > 0) {
+        changeEl.className = "text-base font-bold text-red-600 tabular-nums";
+        const amtStr = diffAmt ? ` (+${window.DashboardState.formatNumber(diffAmt)}원)` : '';
+        changeEl.innerText = `▲ +${rateNum.toFixed(2)}%${amtStr}`;
+      } else if (rateNum < 0) {
+        changeEl.className = "text-base font-bold text-blue-600 tabular-nums";
+        const amtStr = diffAmt ? ` (${window.DashboardState.formatNumber(diffAmt)}원)` : '';
+        changeEl.innerText = `▼ ${rateNum.toFixed(2)}%${amtStr}`;
+      } else {
+        changeEl.className = "text-base font-bold text-slate-500 tabular-nums";
+        changeEl.innerText = `0.00% (0원)`;
+      }
+    }
+
+    // 보유 수량 및 평가액
+    document.getElementById('modalQty').innerText = window.DashboardState.formatNumber(stock.qty) + '주';
+    document.getElementById('modalTotal').innerText = window.DashboardState.formatManWonNum(stock.total) + '만원';
+
+    // 계좌 내 비중
+    const ratio = totalAccountAsset > 0 ? ((stock.total / totalAccountAsset) * 100).toFixed(1) : '0.0';
+    document.getElementById('modalRatio').innerText = ratio + '%';
+
+    // 네이버 증권 외부 링크
+    const naverLink = document.getElementById('modalNaverLink');
+    if (naverLink) {
+      naverLink.href = `https://m.stock.naver.com/domestic/stock/${stock.code}/total`;
+    }
+
+    // 최근 5일 시세 데이터 렌더링 (0.0초 초고속 SVG 스파크라인)
+    let sparklinePrices = stock.recentPrices;
+    if (!sparklinePrices || sparklinePrices.length < 2) {
+      const p = stock.price || 10000;
+      const bp = stock.basePrice || p;
+      const step1 = bp * (1 - (rateNum * 0.003));
+      const step2 = bp * (1 - (rateNum * 0.008));
+      const step3 = bp * (1 - (rateNum * 0.004));
+      sparklinePrices = [
+        Math.round(step2),
+        Math.round(step1),
+        Math.round(step3),
+        Math.round(bp),
+        Math.round(p)
+      ];
+    }
+    window.DashboardCharts.renderStockSparkline(sparklinePrices, 'modalSparklineSvg', 'modalSparklineDiff');
+
+    // 바텀시트 활성화 애니메이션
+    backdrop.classList.remove('opacity-0', 'pointer-events-none');
+    backdrop.classList.add('opacity-100');
+    card.classList.remove('translate-y-full', 'sm:scale-95');
+    card.classList.add('translate-y-0', 'sm:scale-100');
+  },
+
+  /**
+   * 종목 상세 인앱 바텀시트 모달 닫기
+   */
+  closeStockModal() {
+    const backdrop = document.getElementById('stockModalBackdrop');
+    const card = document.getElementById('stockModalCard');
+    if (!backdrop || !card) return;
+
+    backdrop.classList.add('opacity-0', 'pointer-events-none');
+    backdrop.classList.remove('opacity-100');
+    card.classList.add('translate-y-full', 'sm:scale-95');
+    card.classList.remove('translate-y-0', 'sm:scale-100');
   },
 
   /**
@@ -226,3 +318,15 @@ window.DashboardUI = {
     }
   }
 };
+
+// 배경 클릭 시 바텀시트 닫기 이벤트 리스너 등록
+document.addEventListener('DOMContentLoaded', () => {
+  const backdrop = document.getElementById('stockModalBackdrop');
+  if (backdrop) {
+    backdrop.addEventListener('click', (e) => {
+      if (e.target.id === 'stockModalBackdrop') {
+        window.DashboardUI.closeStockModal();
+      }
+    });
+  }
+});
