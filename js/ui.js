@@ -93,44 +93,41 @@ window.DashboardUI = {
       card.id = 'stock-card-' + item.code;
       card.className = "p-2.5 sm:p-3 bg-white border border-slate-200/90 rounded-xl flex items-center justify-between hover:border-blue-400 hover:shadow-xs transition-all duration-300 shadow-2xs";
       
-      // 3. 전일 대비 상승률 표시 (상승: RED, 하락: BLUE)
+      // 3. 전일 대비 상승률 표시 (상승: RED, 하락: BLUE, 14px)
       let changeHtml = '';
       if (item.changeRate !== undefined && item.changeRate !== null) {
         const rate = parseFloat(item.changeRate);
         if (rate > 0) {
-          changeHtml = `<span class="text-xs sm:text-sm font-bold text-red-600 font-mono">▲ +${rate.toFixed(2)}%</span>`;
+          changeHtml = `<span class="text-sm sm:text-base font-bold text-red-600 tabular-nums tracking-tight">▲ +${rate.toFixed(2)}%</span>`;
         } else if (rate < 0) {
-          changeHtml = `<span class="text-xs sm:text-sm font-bold text-blue-600 font-mono">▼ ${rate.toFixed(2)}%</span>`;
+          changeHtml = `<span class="text-sm sm:text-base font-bold text-blue-600 tabular-nums tracking-tight">▼ ${rate.toFixed(2)}%</span>`;
         } else {
-          changeHtml = `<span class="text-xs sm:text-sm font-medium text-slate-500 font-mono">0.00%</span>`;
+          changeHtml = `<span class="text-sm sm:text-base font-medium text-slate-500 tabular-nums tracking-tight">0.00%</span>`;
         }
       } else {
-        changeHtml = `<span class="text-xs text-slate-400 font-mono">- %</span>`;
+        changeHtml = `<span class="text-sm sm:text-base text-slate-400 tabular-nums tracking-tight">- %</span>`;
       }
 
       card.innerHTML = `
         <div class="flex items-center gap-2.5 min-w-0">
           <div class="w-1.5 h-10 rounded-full shrink-0" style="background-color: ${item.color || '#3b82f6'}"></div>
           <div class="min-w-0">
-            <div class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-1.5 truncate tracking-tight">
-              <span class="truncate">${item.name}</span>
-              <span class="text-[11px] font-mono font-medium px-1.5 py-0.2 rounded bg-slate-100 text-slate-500 border border-slate-200 shrink-0">${item.code}</span>
+            <div class="text-base sm:text-lg font-bold text-slate-900 truncate tracking-tight">
+              ${item.name}
             </div>
-            <!-- 수량('주' 위치 통일) & 평가액('만원' 공백 삭제, 간격 최소화) -->
+            <!-- 수량 & 평가액 ('평가액' 텍스트 제거, '주'와 '만원' 열 완벽 일치 정렬) -->
             <div class="flex items-center text-xs sm:text-sm text-slate-500 mt-1 whitespace-nowrap">
-              <span class="w-[48px] text-right font-mono font-semibold text-slate-800 shrink-0">${window.DashboardState.formatNumber(item.qty)}</span>
+              <span class="w-[34px] sm:w-[40px] text-right tabular-nums tracking-tight font-semibold text-slate-800 shrink-0">${window.DashboardState.formatNumber(item.qty)}</span>
               <span class="text-slate-400 shrink-0 ml-0.5">주</span>
-              <span class="mx-1.5 text-slate-200 shrink-0">|</span>
-              <span class="text-slate-400 shrink-0">평가액</span>
-              <span class="ml-1 font-mono font-semibold text-slate-800 shrink-0">${window.DashboardState.formatManWonNum(item.total)}</span>
-              <span class="text-slate-400 shrink-0">만원</span>
+              <span class="w-[52px] sm:w-[58px] text-right tabular-nums tracking-tight font-semibold text-slate-800 shrink-0 ml-3 sm:ml-4">${window.DashboardState.formatManWonNum(item.total)}</span>
+              <span class="text-slate-400 shrink-0 ml-0.5">만원</span>
             </div>
           </div>
         </div>
         
-        <!-- 우측: 현재가 크게 표시 & 전일 대비 상승률 -->
+        <!-- 우측: 현재가 크게 표시 & 전일 대비 상승률(14px) -->
         <div class="text-right flex flex-col items-end justify-center shrink-0 ml-2">
-          <div class="text-base sm:text-lg font-bold text-slate-900 font-mono tracking-tight">
+          <div class="text-base sm:text-lg font-bold text-slate-900 tabular-nums tracking-tight">
             ${window.DashboardState.formatNumber(item.price)}원
           </div>
           <div class="mt-0.5">
