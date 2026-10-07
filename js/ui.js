@@ -143,6 +143,34 @@ window.DashboardUI = {
   },
 
   /**
+   * 최초 로딩 시 깜빡이는 스켈레톤 플레이스홀더 카드 렌더링
+   */
+  renderSkeletons(containerId = 'stockListContainer') {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+
+    for (let i = 0; i < 4; i++) {
+      const skel = document.createElement('div');
+      skel.className = "p-2.5 sm:p-3 bg-white border border-slate-200/70 rounded-xl flex items-center justify-between animate-pulse shadow-2xs";
+      skel.innerHTML = `
+        <div class="flex items-center gap-2.5 min-w-0 flex-1">
+          <div class="w-1.5 h-10 rounded-full bg-slate-200 shrink-0"></div>
+          <div class="space-y-1.5 flex-1">
+            <div class="h-4 bg-slate-200 rounded w-28"></div>
+            <div class="h-3 bg-slate-100 rounded w-36"></div>
+          </div>
+        </div>
+        <div class="text-right space-y-1.5 shrink-0 ml-2">
+          <div class="h-4 bg-slate-200 rounded w-20 ml-auto"></div>
+          <div class="h-3 bg-slate-100 rounded w-14 ml-auto"></div>
+        </div>
+      `;
+      container.appendChild(skel);
+    }
+  },
+
+  /**
    * 로딩 스피너 및 메인 콘텐츠 표시 전환
    */
   setLoading(isLoading) {
@@ -151,8 +179,9 @@ window.DashboardUI = {
     const refreshIcon = document.getElementById('refreshIcon');
 
     if (isLoading) {
-      loadingBox.classList.remove('hidden');
-      mainContent.classList.add('hidden');
+      if (mainContent.classList.contains('hidden')) {
+        loadingBox.classList.remove('hidden');
+      }
       if (refreshIcon) refreshIcon.classList.add('animate-spin');
     } else {
       loadingBox.classList.add('hidden');

@@ -77,5 +77,44 @@ window.DashboardState = {
   formatManWonNum(num) {
     if (!num || isNaN(num)) return '0';
     return Math.round(num / 10000).toLocaleString('ko-KR');
+  },
+
+  // 로컬 스토리지 캐시 키 (버전 관리)
+  CACHE_KEY: 'stock_dashboard_cache_v1',
+
+  /**
+   * 로컬 스토리지에서 캐시된 최신 주식 데이터를 불러옵니다.
+   * @returns {{data: Object, timestamp: number}|null}
+   */
+  loadCachedData() {
+    try {
+      const cached = localStorage.getItem(this.CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && parsed.data && parsed.data.holdings) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('[Cache] 로컬 캐시 조회 실패:', e);
+    }
+    return null;
+  },
+
+  /**
+   * API 수신 데이터를 로컬 스토리지에 캐싱합니다.
+   * @param {Object} data 
+   */
+  saveCachedData(data) {
+    try {
+      if (!data || !data.holdings) return;
+      const payload = {
+        data: data,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(this.CACHE_KEY, JSON.stringify(payload));
+    } catch (e) {
+      console.warn('[Cache] 로컬 캐시 저장 실패:', e);
+    }
   }
 };

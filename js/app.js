@@ -26,7 +26,26 @@ window.DashboardApp = {
     // 2. 화면 리사이즈 시 차트 자동 재조정
     window.addEventListener('resize', () => this.renderCurrentView());
 
-    // 3. 실시간 데이터 불러오기
+    // 3. [Stale-While-Revalidate] 캐시 데이터 우선 렌더링 (0.0초 즉시 표시)
+    const cached = window.DashboardState.loadCachedData();
+    if (cached && cached.data) {
+      window.DashboardState.rawData = cached.data;
+      window.DashboardUI.setLoading(false); // 스피너 없이 메인 즉시 노출
+      window.DashboardUI.setStatus('syncing'); // 백그라운드 동기화 중 표시
+      
+      const cacheTimeStr = new Date(cached.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+      const lastUpdateEl = document.getElementById('lastUpdatedTime');
+      if (lastUpdateEl) lastUpdateEl.innerText = `캐시 (${cacheTimeStr}) 동기화 중...`;
+
+      // 캐시 데이터로 즉시 화면 렌더링
+      this.renderCurrentView();
+    } else {
+      // 캐시가 없는 첫 접속 시 스켈레톤 UI 노출
+      window.DashboardUI.setLoading(true);
+      window.DashboardUI.renderSkeletons();
+    }
+
+    // 4. 백그라운드 실시간 최신 데이터 동기화
     await this.loadData();
   },
 
@@ -40,20 +59,28 @@ window.DashboardApp = {
       const data = await window.DashboardAPI.fetchStockData();
       window.DashboardState.rawData = data;
 
+      // 최신 데이터 로컬 스토리지에 캐싱
+      window.DashboardState.saveCachedData(data);
+
       window.DashboardUI.setStatus('success');
       window.DashboardUI.setLoading(false);
 
       // 갱신 시각 표시
       const timeStr = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
       const lastUpdateEl = document.getElementById('lastUpdatedTime');
-      if (lastUpdateEl) lastUpdateEl.innerText = "갱신: " + timeStr;
+      if (lastUpdateEl) lastUpdateEl.innerText = "실시간: " + timeStr;
 
       // 화면 렌더링
       this.renderCurrentView();
     } catch (err) {
       window.DashboardUI.setStatus('error');
       window.DashboardUI.setLoading(false);
-      alert("데이터를 불러오지 못했습니다. 잠시 후 새로고침 버튼을 눌러주세요.");
+      if (!window.DashboardState.rawData) {
+        alert("데이터를 불러오지 못했습니다. 잠시 후 새로고침 버튼을 눌러주세요.");
+      } else {
+        const lastUpdateEl = document.getElementById('lastUpdatedTime');
+        if (lastUpdateEl) lastUpdateEl.innerText += " (오프라인)";
+      }
     }
   },
 

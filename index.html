@@ -86,10 +86,24 @@
       <p class="text-sm font-semibold text-slate-500">Google Sheets 실시간 데이터 동기화 중...</p>
     </div>
 
-    <!-- 대시보드 메인 콘텐츠 영역 (좌우 여백 최소화 및 모던 핀테크 스타일) -->
+    <!-- 대시보드 메인 콘텐츠 영역 (보유 종목 최상단 배치 및 최적화된 위계) -->
     <main id="mainContent" class="p-2 sm:p-3 space-y-2.5 sm:space-y-3.5 overflow-y-auto hidden">
 
-      <!-- 1단: 최근 12개월 자산 막대그래프 -->
+      <!-- 1단: 보유 종목 상세 리스트 카드 (최상단 우선 노출) -->
+      <article class="bg-slate-50 border border-slate-200/90 rounded-xl p-2.5 sm:p-3.5 shadow-2xs">
+        <div class="flex items-center justify-between mb-2 sm:mb-2.5">
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-4 rounded-full bg-emerald-600"></div>
+            <h2 class="text-base sm:text-lg font-bold text-slate-800">보유 종목</h2>
+          </div>
+        </div>
+
+        <div class="space-y-2" id="stockListContainer">
+          <!-- 동적 카드 또는 스켈레톤 로드 -->
+        </div>
+      </article>
+
+      <!-- 2단: 최근 12개월 자산 막대그래프 -->
       <article class="bg-slate-50 border border-slate-200/90 rounded-xl p-2.5 sm:p-3.5 shadow-2xs">
         <div class="flex items-center justify-between mb-2 sm:mb-2.5">
           <div class="flex items-center gap-2">
@@ -107,7 +121,7 @@
         </div>
       </article>
 
-      <!-- 2단: 배당금 막대그래프 -->
+      <!-- 3단: 배당금 막대그래프 -->
       <article class="bg-slate-50 border border-slate-200/90 rounded-xl p-2.5 sm:p-3.5 shadow-2xs">
         <div class="flex items-center justify-between mb-2 sm:mb-2.5">
           <div class="flex items-center gap-2">
@@ -122,19 +136,6 @@
         <div class="flex justify-between items-center text-xs sm:text-sm text-slate-500 mt-2 sm:mt-2.5 pt-2 border-t border-slate-200">
           <span>연간 누적 배당: <strong class="text-amber-600 font-bold text-sm sm:text-base" id="totalDividendYear">-</strong></span>
           <span>월평균: <strong class="text-slate-800 font-semibold text-sm sm:text-base" id="avgDividendMonth">-</strong></span>
-        </div>
-      </article>
-
-      <!-- 3단: 보유 종목 상세 리스트 카드 -->
-      <article class="bg-slate-50 border border-slate-200/90 rounded-xl p-2.5 sm:p-3.5 shadow-2xs">
-        <div class="flex items-center justify-between mb-2 sm:mb-2.5">
-          <div class="flex items-center gap-2">
-            <div class="w-2 h-4 rounded-full bg-emerald-600"></div>
-            <h2 class="text-base sm:text-lg font-bold text-slate-800">보유 종목</h2>
-          </div>
-        </div>
-
-        <div class="space-y-2" id="stockListContainer">
         </div>
       </article>
 
