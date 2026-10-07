@@ -17,11 +17,24 @@ window.DashboardUI = {
     accounts.forEach((acc, idx) => {
       const btn = document.createElement('button');
       const isActive = idx === activeIndex;
-      
-      btn.className = isActive
-        ? "px-3.5 py-1.5 rounded-full text-sm sm:text-base font-bold bg-blue-600 text-white whitespace-nowrap shadow-xs transition-all"
-        : "px-3.5 py-1.5 rounded-full text-sm sm:text-base font-medium bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200 whitespace-nowrap transition-all";
-      btn.innerText = acc.name;
+      const isTotal = acc.id === 'all' || acc.id === 'all_k' || (acc.name && acc.name.includes('통합'));
+
+      if (isActive) {
+        btn.className = isTotal
+          ? "flex-1 py-1.5 px-0.5 sm:px-1 rounded-lg text-xs sm:text-sm font-bold text-center transition-all bg-white text-blue-600 shadow-[0_4px_8px_rgba(0,0,0,0.12),0_1px_2px_rgba(0,0,0,0.08)] border-t border-white flex items-center justify-center gap-0.5 sm:gap-1 truncate cursor-pointer active:scale-[0.98]"
+          : "flex-1 py-1.5 px-0.5 sm:px-1 rounded-lg text-xs sm:text-sm font-bold text-center transition-all bg-white text-slate-900 shadow-[0_4px_8px_rgba(0,0,0,0.12),0_1px_2px_rgba(0,0,0,0.08)] border-t border-white flex items-center justify-center truncate cursor-pointer active:scale-[0.98]";
+      } else {
+        btn.className = isTotal
+          ? "flex-1 py-1.5 px-0.5 sm:px-1 rounded-lg text-xs sm:text-sm font-medium text-slate-500 text-center transition-all hover:text-slate-800 flex items-center justify-center gap-0.5 sm:gap-1 truncate cursor-pointer"
+          : "flex-1 py-1.5 px-0.5 sm:px-1 rounded-lg text-xs sm:text-sm font-medium text-slate-500 text-center transition-all hover:text-slate-800 flex items-center justify-center truncate cursor-pointer";
+      }
+
+      if (isTotal) {
+        const badgeBg = isActive ? "bg-blue-100 text-blue-700 font-black" : "bg-slate-200 text-slate-500 font-bold";
+        btn.innerHTML = `<span class="px-1 py-0.2 rounded text-[9px] ${badgeBg}">ALL</span><span>${acc.name}</span>`;
+      } else {
+        btn.innerText = acc.name;
+      }
       
       btn.onclick = () => onSelectTab(idx);
       container.appendChild(btn);

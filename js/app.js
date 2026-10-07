@@ -123,10 +123,38 @@ window.DashboardApp = {
     // 2. 헤더 정보 업데이트
     document.getElementById('currentAccountTitle').innerText = activeAccount.name;
 
-    // 3. 해당 계좌의 보유 종목 추출 및 총 자산 계산
+    // 3. 해당 계좌의 보유 종목 추출 및 총 자산 / 전일 대비 증감액 계산
     const matchedHoldings = rawData.holdings.filter(h => activeAccount.filter.includes(h.account));
     const currentTotalAsset = matchedHoldings.reduce((sum, h) => sum + h.total, 0);
     document.getElementById('headerTotalAsset').innerText = window.DashboardState.formatNumber(currentTotalAsset) + '원';
+
+    // 전일 대비 증감액 계산 (전일 종가 대비 금액)
+    let totalDayDiff = 0;
+    matchedHoldings.forEach(item => {
+      if (item.basePrice && item.price !== undefined && item.qty) {
+        totalDayDiff += (item.price - item.basePrice) * item.qty;
+      } else if (item.changeRate !== undefined && item.changeRate !== null && item.total) {
+        const r = parseFloat(item.changeRate);
+        if (!isNaN(r) && r !== -100) {
+          totalDayDiff += item.total * (r / (100 + r));
+        }
+      }
+    });
+
+    const diffEl = document.getElementById('headerTotalAssetDiff');
+    if (diffEl) {
+      const roundedDiff = Math.round(totalDayDiff);
+      if (roundedDiff > 0) {
+        diffEl.className = "text-base font-bold tabular-nums text-red-600 mt-0.5";
+        diffEl.innerText = `▲ +${window.DashboardState.formatNumber(roundedDiff)}원`;
+      } else if (roundedDiff < 0) {
+        diffEl.className = "text-base font-bold tabular-nums text-blue-600 mt-0.5";
+        diffEl.innerText = `▼ ${window.DashboardState.formatNumber(roundedDiff)}원`;
+      } else {
+        diffEl.className = "text-base font-bold tabular-nums text-slate-500 mt-0.5";
+        diffEl.innerText = `0원`;
+      }
+    }
 
     // 4. 최근 12개월 히스토리 데이터 구성
     const historyData = rawData.history.map(row => {
