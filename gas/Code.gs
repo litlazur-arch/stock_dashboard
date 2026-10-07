@@ -123,6 +123,8 @@ function doGet(e) {
       var marketMap = pollResult.map || {};
       debugLog = pollResult.debug || "";
 
+      var history5Map = fetchStockHistory5Days(uniqueCodes);
+
       for (var h = 0; h < holdingsList.length; h++) {
         var item = holdingsList[h];
         var market = marketMap[item.code];
@@ -136,6 +138,11 @@ function doGet(e) {
           item.changeAmount = market.changeAmount;
         } else {
           item.changeRate = 0;
+        }
+
+        if (history5Map[item.code]) {
+          item.recentPrices = history5Map[item.code].prices;
+          item.recentDates = history5Map[item.code].dates;
         }
       }
     } catch (apiErr) {
@@ -205,6 +212,51 @@ function fetchStockPollingData(codes) {
     Logger.log("Polling fetch error: " + err);
     return { map: {}, debug: "error: " + err.toString() };
   }
+}
+
+function fetchStockHistory5Days(codes) {
+  if (!codes || codes.length === 0) return {};
+  var requests = [];
+  for (var i = 0; i < codes.length; i++) {
+    requests.push({
+      url: "https://m.stock.naver.com/api/stock/" + codes[i] + "/price?page=1&pageSize=5",
+      method: "get",
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      },
+      muteHttpExceptions: true
+    });
+  }
+
+  var historyMap = {};
+  try {
+    var responses = UrlFetchApp.fetchAll(requests);
+    for (var j = 0; j < responses.length; j++) {
+      var code = codes[j];
+      var res = responses[j];
+      if (res.getResponseCode() === 200) {
+        var list = JSON.parse(res.getContentText());
+        if (Array.isArray(list) && list.length > 0) {
+          var sorted = list.slice().reverse();
+          var prices = [];
+          var dates = [];
+          for (var k = 0; k < sorted.length; k++) {
+            var item = sorted[k];
+            var p = parseInt(String(item.closePrice || "0").replace(/,/g, ""), 10);
+            prices.push(p);
+            var dStr = String(item.localTradedAt || "");
+            var parts = dStr.split("-");
+            var dateFormatted = parts.length >= 3 ? (parts[1] + "." + parts[2]) : dStr;
+            dates.push(dateFormatted);
+          }
+          historyMap[code] = { prices: prices, dates: dates };
+        }
+      }
+    }
+  } catch (err) {
+    Logger.log("5-day history fetch error: " + err);
+  }
+  return historyMap;
 }
 
 function padCode(str) {

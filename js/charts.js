@@ -358,8 +358,10 @@ window.DashboardCharts = {
 
   /**
    * 종목 상세 바텀시트용 최근 5일 초경량 SVG 스파크라인 추세선 렌더링 (0.0초 렌더링)
+   * @param {Array<number>} prices 5영업일 실제 종가 배열
+   * @param {Array<string>} dates 5영업일 실제 날짜 배열 (예: ['09.30', '10.01', ...])
    */
-  renderStockSparkline(prices, svgId, diffId) {
+  renderStockSparkline(prices, dates, svgId, diffId) {
     const svg = document.getElementById(svgId);
     if (!svg || !prices || prices.length < 2) return;
     svg.innerHTML = '';
@@ -399,7 +401,11 @@ window.DashboardCharts = {
     const points = prices.map((p, idx) => {
       const x = padX + (idx / (prices.length - 1)) * (width - padX * 2);
       const y = height - padY - ((p - minP) / range) * (height - padY * 2);
-      return { x, y, price: p, day: idx === prices.length - 1 ? '오늘' : `D-${prices.length - 1 - idx}` };
+      let dayLabel = idx === prices.length - 1 ? '오늘' : `D-${prices.length - 1 - idx}`;
+      if (dates && dates[idx]) {
+        dayLabel = idx === prices.length - 1 ? `오늘 (${dates[idx]})` : dates[idx];
+      }
+      return { x, y, price: p, day: dayLabel, isLast: idx === prices.length - 1 };
     });
 
     // SVG Defs (그라데이션)
@@ -452,8 +458,8 @@ window.DashboardCharts = {
       const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
       circle.setAttribute("cx", pt.x);
       circle.setAttribute("cy", pt.y);
-      circle.setAttribute("r", pt.day === '오늘' ? "4.5" : "3");
-      circle.setAttribute("fill", pt.day === '오늘' ? strokeColor : "#ffffff");
+      circle.setAttribute("r", pt.isLast ? "4.5" : "3");
+      circle.setAttribute("fill", pt.isLast ? strokeColor : "#ffffff");
       circle.setAttribute("stroke", strokeColor);
       circle.setAttribute("stroke-width", "2");
       circle.setAttribute("class", "cursor-pointer transition-transform hover:scale-125");

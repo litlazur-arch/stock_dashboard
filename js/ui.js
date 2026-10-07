@@ -207,23 +207,26 @@ window.DashboardUI = {
       naverLink.href = `https://m.stock.naver.com/domestic/stock/${stock.code}/total`;
     }
 
-    // 최근 5일 시세 데이터 렌더링 (0.0초 초고속 SVG 스파크라인)
+    // 최근 5일 시세 데이터 렌더링 (실제 5영업일 종가 & 거래일자 연동)
     let sparklinePrices = stock.recentPrices;
+    let sparklineDates = stock.recentDates;
     if (!sparklinePrices || sparklinePrices.length < 2) {
-      const p = stock.price || 10000;
+      const p = stock.price || 0;
       const bp = stock.basePrice || p;
-      const step1 = bp * (1 - (rateNum * 0.003));
-      const step2 = bp * (1 - (rateNum * 0.008));
-      const step3 = bp * (1 - (rateNum * 0.004));
-      sparklinePrices = [
-        Math.round(step2),
-        Math.round(step1),
-        Math.round(step3),
-        Math.round(bp),
-        Math.round(p)
-      ];
+      sparklinePrices = [bp, p];
+      sparklineDates = ['전일', '오늘'];
     }
-    window.DashboardCharts.renderStockSparkline(sparklinePrices, 'modalSparklineSvg', 'modalSparklineDiff');
+
+    // 날짜 라벨 텍스트 업데이트
+    const daysEl = document.getElementById('modalSparklineDays');
+    if (daysEl && sparklineDates && sparklineDates.length >= 2) {
+      daysEl.innerHTML = sparklineDates.map((d, i) => {
+        const isToday = i === sparklineDates.length - 1;
+        return `<span class="${isToday ? 'font-bold text-slate-700' : ''}">${d}</span>`;
+      }).join('');
+    }
+
+    window.DashboardCharts.renderStockSparkline(sparklinePrices, sparklineDates, 'modalSparklineSvg', 'modalSparklineDiff');
 
     // 바텀시트 활성화 애니메이션
     backdrop.classList.remove('opacity-0', 'pointer-events-none');
