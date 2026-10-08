@@ -106,10 +106,18 @@ function doGet(e) {
         if (!code || !name || code.indexOf("합계") !== -1 || name.indexOf("합계") !== -1) continue;
 
         var price = Number(values[lastRowIdx][col]) || 0;
-        var buyPrice = Number(values[lastRowIdx][col + 2]) || 0;
-        var buyTotal = Number(values[lastRowIdx][col + 3]) || (buyPrice > 0 ? (qty * buyPrice) : 0);
-        var qty = Number(values[lastRowIdx][col + 4]) || 0;
-        var total = Number(values[lastRowIdx][col + 6]) || (qty * price);
+        var openPrice = Number(values[lastRowIdx][col + 2]) || 0;
+        var buyPrice = Number(values[lastRowIdx][col + 3]) || 0;
+        var buyTotal = Number(values[lastRowIdx][col + 4]) || 0;
+        var qty = Number(values[lastRowIdx][col + 5]) || 0;
+        var total = Number(values[lastRowIdx][col + 7]) || (qty * price);
+
+        if (buyTotal === 0 && buyPrice > 0 && qty > 0) {
+          buyTotal = buyPrice * qty;
+        }
+        if (buyPrice === 0 && buyTotal > 0 && qty > 0) {
+          buyPrice = Math.round(buyTotal / qty);
+        }
 
         if (qty > 0) {
           holdingsList.push({
