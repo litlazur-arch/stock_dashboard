@@ -58,7 +58,11 @@ function doGet(e) {
             retire_Asset: Number(briefValues[r][16]) || 0,
             retire_Div: Number(briefValues[r][17]) || 0,
             irp_Asset: Number(briefValues[r][18]) || 0,
-            irp_Div: Number(briefValues[r][19]) || 0
+            irp_Div: Number(briefValues[r][19]) || 0,
+            tlpK_Asset: Number(briefValues[r][20]) || 0,
+            tlpK_Div: Number(briefValues[r][21]) || 0,
+            tlpJ_Asset: Number(briefValues[r][22]) || 0,
+            tlpJ_Div: Number(briefValues[r][23]) || 0
           };
         }
       }
@@ -77,7 +81,9 @@ function doGet(e) {
       { name: "개인연금Ⓚ", maxCol: 25 },
       { name: "개인연금Ⓙ", maxCol: 25 },
       { name: "퇴직연금", maxCol: 30 },
-      { name: "IRP", maxCol: 30 }
+      { name: "IRP", maxCol: 30 },
+      { name: "TLPⓀ", maxCol: 30 },
+      { name: "TLPⒿ", maxCol: 30 }
     ];
 
     for (var s = 0; s < targetSheets.length; s++) {

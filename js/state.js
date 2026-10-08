@@ -22,17 +22,19 @@ window.DashboardState = {
   getAccountsForUser(userCode) {
     if (userCode === 'j') {
       return [
-        { id: "all", name: "통합", filter: ["위탁Ⓙ", "개인연금Ⓙ", "퇴직연금", "IRP"] },
+        { id: "all", name: "통합", filter: ["위탁Ⓙ", "개인연금Ⓙ", "TLPⒿ", "퇴직연금", "IRP"] },
         { id: "broker_j", name: "위탁Ⓙ", filter: ["위탁Ⓙ"] },
         { id: "pension_j", name: "개인연금Ⓙ", filter: ["개인연금Ⓙ"] },
+        { id: "tlp_j", name: "TLPⒿ", filter: ["TLPⒿ"] },
         { id: "retire", name: "퇴직연금", filter: ["퇴직연금"] },
         { id: "irp", name: "IRP", filter: ["IRP"] }
       ];
     } else if (userCode === 'k') {
       return [
-        { id: "all_k", name: "통합", filter: ["위탁Ⓚ", "개인연금Ⓚ"] },
+        { id: "all_k", name: "통합", filter: ["위탁Ⓚ", "개인연금Ⓚ", "TLPⓀ"] },
         { id: "broker_k", name: "위탁Ⓚ", filter: ["위탁Ⓚ"] },
-        { id: "pension_k", name: "개인연금Ⓚ", filter: ["개인연금Ⓚ"] }
+        { id: "pension_k", name: "개인연금Ⓚ", filter: ["개인연금Ⓚ"] },
+        { id: "tlp_k", name: "TLPⓀ", filter: ["TLPⓀ"] }
       ];
     }
     return [];
@@ -80,7 +82,7 @@ window.DashboardState = {
   },
 
   // 로컬 스토리지 캐시 키 (버전 관리)
-  CACHE_KEY: 'stock_dashboard_cache_v1',
+  CACHE_KEY: 'stock_dashboard_cache_v2',
 
   /**
    * 로컬 스토리지에서 캐시된 최신 주식 데이터를 불러옵니다.

@@ -174,6 +174,8 @@ window.DashboardApp = {
         else if (accName === "개인연금Ⓙ") { asset += row.pensionJ_Asset; div += row.pensionJ_Div; }
         else if (accName === "퇴직연금") { asset += row.retire_Asset; div += row.retire_Div; }
         else if (accName === "IRP") { asset += row.irp_Asset; div += row.irp_Div; }
+        else if (accName === "TLPⓀ") { asset += (row.tlpK_Asset || 0); div += (row.tlpK_Div || 0); }
+        else if (accName === "TLPⒿ") { asset += (row.tlpJ_Asset || 0); div += (row.tlpJ_Div || 0); }
       });
 
       return { month: row.month, asset, div };

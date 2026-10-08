@@ -21,12 +21,12 @@ window.DashboardUI = {
 
       if (isActive) {
         btn.className = isTotal
-          ? "flex-1 py-1.5 px-0.5 rounded-lg text-sm font-bold text-center tracking-tight transition-all bg-white text-blue-600 shadow-[0_4px_8px_rgba(0,0,0,0.12),0_1px_2px_rgba(0,0,0,0.08)] border-t border-white flex items-center justify-center gap-0.5 truncate cursor-pointer active:scale-[0.98]"
-          : "flex-1 py-1.5 px-0.5 rounded-lg text-sm font-bold text-center tracking-tight transition-all bg-white text-slate-900 shadow-[0_4px_8px_rgba(0,0,0,0.12),0_1px_2px_rgba(0,0,0,0.08)] border-t border-white flex items-center justify-center truncate cursor-pointer active:scale-[0.98]";
+          ? "flex-1 py-1.5 px-0.5 rounded-lg text-xs sm:text-sm font-bold text-center tracking-tight transition-all bg-white text-blue-600 shadow-[0_4px_8px_rgba(0,0,0,0.12),0_1px_2px_rgba(0,0,0,0.08)] border-t border-white flex items-center justify-center gap-0.5 truncate cursor-pointer active:scale-[0.98]"
+          : "flex-1 py-1.5 px-0.5 rounded-lg text-xs sm:text-sm font-bold text-center tracking-tight transition-all bg-white text-slate-900 shadow-[0_4px_8px_rgba(0,0,0,0.12),0_1px_2px_rgba(0,0,0,0.08)] border-t border-white flex items-center justify-center truncate cursor-pointer active:scale-[0.98]";
       } else {
         btn.className = isTotal
-          ? "flex-1 py-1.5 px-0.5 rounded-lg text-sm font-medium text-slate-500 text-center tracking-tight transition-all hover:text-slate-800 flex items-center justify-center gap-0.5 truncate cursor-pointer"
-          : "flex-1 py-1.5 px-0.5 rounded-lg text-sm font-medium text-slate-500 text-center tracking-tight transition-all hover:text-slate-800 flex items-center justify-center truncate cursor-pointer";
+          ? "flex-1 py-1.5 px-0.5 rounded-lg text-xs sm:text-sm font-medium text-slate-500 text-center tracking-tight transition-all hover:text-slate-800 flex items-center justify-center gap-0.5 truncate cursor-pointer"
+          : "flex-1 py-1.5 px-0.5 rounded-lg text-xs sm:text-sm font-medium text-slate-500 text-center tracking-tight transition-all hover:text-slate-800 flex items-center justify-center truncate cursor-pointer";
       }
 
       if (isTotal) {
