@@ -202,14 +202,40 @@ function fetchStockPollingData(codes) {
         for (var i = 0; i < datas.length; i++) {
           var d = datas[i];
           var rate = parseFloat(d.cr) || 0;
-          if (d.rf === "5" || d.rf === "4") {
+          var diffVal = parseFloat(d.cv) || 0;
+          
+          // rf: 1(상한), 2(상승), 3(보합), 4(하한), 5(하락)
+          if (d.rf === "4" || d.rf === "5") {
             rate = -Math.abs(rate);
+            diffVal = -Math.abs(diffVal);
+          } else if (d.rf === "3") {
+            rate = 0;
+            diffVal = 0;
+          } else {
+            rate = Math.abs(rate);
+            diffVal = Math.abs(diffVal);
           }
+
+          // 기준가(sv)와 현재가(nv)가 있으면 직접 비교하여 검증
+          if (d.nv !== undefined && d.sv !== undefined && Number(d.sv) > 0) {
+            var diff = Number(d.nv) - Number(d.sv);
+            if (diff < 0) {
+              rate = -Math.abs(rate);
+              diffVal = -Math.abs(diffVal);
+            } else if (diff > 0) {
+              rate = Math.abs(rate);
+              diffVal = Math.abs(diffVal);
+            } else {
+              rate = 0;
+              diffVal = 0;
+            }
+          }
+
           marketMap[d.cd] = {
             basePrice: d.sv,
             currentPrice: d.nv,
             changeRate: rate,
-            changeAmount: d.cv
+            changeAmount: diffVal
           };
         }
         return { map: marketMap, debug: "success (" + datas.length + " items)" };

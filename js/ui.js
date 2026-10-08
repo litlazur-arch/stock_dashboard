@@ -134,27 +134,42 @@ window.DashboardUI = {
       let rateNum = 0;
       let diffAmtNum = 0;
 
+      // 1. 기준가(전일종가)와 현재가가 둘 다 있으면 직접 계산
+      if (item.basePrice && item.price) {
+        diffAmtNum = Math.round(item.price - item.basePrice);
+        if (item.basePrice > 0) {
+          rateNum = ((item.price - item.basePrice) / item.basePrice) * 100;
+        }
+      }
+
+      // 2. changeRate 또는 changeAmount 명시값이 있는 경우 반영
       if (item.changeRate !== undefined && item.changeRate !== null) {
-        rateNum = parseFloat(item.changeRate) || 0;
+        const parsedRate = parseFloat(item.changeRate);
+        if (!isNaN(parsedRate)) rateNum = parsedRate;
       }
       if (item.changeAmount !== undefined && item.changeAmount !== null && item.changeAmount !== 0) {
         diffAmtNum = Math.round(item.changeAmount);
-      } else if (item.basePrice && item.price) {
-        diffAmtNum = Math.round(item.price - item.basePrice);
-      } else if (rateNum !== 0 && item.price) {
-        diffAmtNum = Math.round(item.price * (rateNum / 100));
+      } else if (diffAmtNum === 0 && rateNum !== 0 && item.price) {
+        diffAmtNum = Math.round(item.price * (rateNum / (100 + rateNum)));
+      }
+
+      // 3. 만약 rateNum과 diffAmtNum의 부호가 불일치하면 rateNum을 기준으로 일치화
+      if (rateNum < 0 && diffAmtNum > 0) {
+        diffAmtNum = -Math.abs(diffAmtNum);
+      } else if (rateNum > 0 && diffAmtNum < 0) {
+        diffAmtNum = Math.abs(diffAmtNum);
       }
 
       let diffAmtHtml = '';
       let diffRateHtml = '';
 
-      if (rateNum > 0 || diffAmtNum > 0) {
-        const absAmt = Math.abs(diffAmtNum || Math.round(item.price * rateNum / 100));
+      if (rateNum > 0 || (rateNum === 0 && diffAmtNum > 0)) {
+        const absAmt = Math.abs(diffAmtNum);
         const absRate = Math.abs(rateNum);
         diffAmtHtml = `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight leading-tight">+${window.DashboardState.formatNumber(absAmt)}원</span>`;
         diffRateHtml = `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight leading-tight">+${absRate.toFixed(2)}%</span>`;
-      } else if (rateNum < 0 || diffAmtNum < 0) {
-        const absAmt = Math.abs(diffAmtNum || Math.round(item.price * rateNum / 100));
+      } else if (rateNum < 0 || (rateNum === 0 && diffAmtNum < 0)) {
+        const absAmt = Math.abs(diffAmtNum);
         const absRate = Math.abs(rateNum);
         diffAmtHtml = `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight leading-tight">-${window.DashboardState.formatNumber(absAmt)}원</span>`;
         diffRateHtml = `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight leading-tight">-${absRate.toFixed(2)}%</span>`;
@@ -207,19 +222,38 @@ window.DashboardUI = {
     document.getElementById('modalPrice').innerText = window.DashboardState.formatNumber(stock.price) + '원';
 
     // 전일 대비 등락률 및 등락액
-    let rateVal = stock.changeRate;
-    let diffAmt = stock.changeAmount;
-    if (rateVal === undefined || rateVal === null) {
-      rateVal = 0;
+    let rateNum = 0;
+    let diffAmt = 0;
+
+    if (stock.basePrice && stock.price) {
+      diffAmt = Math.round(stock.price - stock.basePrice);
+      if (stock.basePrice > 0) {
+        rateNum = ((stock.price - stock.basePrice) / stock.basePrice) * 100;
+      }
     }
-    const rateNum = parseFloat(rateVal);
+    if (stock.changeRate !== undefined && stock.changeRate !== null) {
+      const parsed = parseFloat(stock.changeRate);
+      if (!isNaN(parsed)) rateNum = parsed;
+    }
+    if (stock.changeAmount !== undefined && stock.changeAmount !== null && stock.changeAmount !== 0) {
+      diffAmt = Math.round(stock.changeAmount);
+    } else if (diffAmt === 0 && rateNum !== 0 && stock.price) {
+      diffAmt = Math.round(stock.price * (rateNum / (100 + rateNum)));
+    }
+
+    if (rateNum < 0 && diffAmt > 0) {
+      diffAmt = -Math.abs(diffAmt);
+    } else if (rateNum > 0 && diffAmt < 0) {
+      diffAmt = Math.abs(diffAmt);
+    }
+
     const changeEl = document.getElementById('modalChangeRate');
     if (changeEl) {
-      if (rateNum > 0 || (diffAmt && diffAmt > 0)) {
+      if (rateNum > 0 || (rateNum === 0 && diffAmt > 0)) {
         changeEl.className = "text-base font-bold text-red-600 tabular-nums";
         const amtStr = diffAmt ? ` (+${window.DashboardState.formatNumber(Math.abs(diffAmt))}원)` : '';
         changeEl.innerText = `+${Math.abs(rateNum).toFixed(2)}%${amtStr}`;
-      } else if (rateNum < 0 || (diffAmt && diffAmt < 0)) {
+      } else if (rateNum < 0 || (rateNum === 0 && diffAmt < 0)) {
         changeEl.className = "text-base font-bold text-blue-600 tabular-nums";
         const amtStr = diffAmt ? ` (-${window.DashboardState.formatNumber(Math.abs(diffAmt))}원)` : '';
         changeEl.innerText = `-${Math.abs(rateNum).toFixed(2)}%${amtStr}`;
