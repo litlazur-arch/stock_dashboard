@@ -229,13 +229,54 @@ window.DashboardUI = {
       }
     }
 
+    // 계좌 배지
+    const badgeEl = document.getElementById('modalAccountBadge');
+    if (badgeEl) {
+      badgeEl.innerText = stock.account || '보유 계좌';
+    }
+
     // 보유 수량 및 평가액
     document.getElementById('modalQty').innerText = window.DashboardState.formatNumber(stock.qty) + '주';
-    document.getElementById('modalTotal').innerText = window.DashboardState.formatManWonNum(stock.total) + '만원';
+    document.getElementById('modalTotal').innerText = window.DashboardState.formatKoreanMoney(stock.total) + '원';
 
     // 계좌 내 비중
     const ratio = totalAccountAsset > 0 ? ((stock.total / totalAccountAsset) * 100).toFixed(1) : '0.0';
     document.getElementById('modalRatio').innerText = ratio + '%';
+
+    // 매수 금액, 매수 단가 및 누적 평가 손익
+    const buyTotalEl = document.getElementById('modalBuyTotal');
+    const buyPriceEl = document.getElementById('modalBuyPrice');
+    const profitEl = document.getElementById('modalProfit');
+
+    const buyTotal = stock.buyTotal || (stock.buyPrice && stock.qty ? Math.round(stock.buyPrice * stock.qty) : 0);
+    const buyPrice = stock.buyPrice || (buyTotal > 0 && stock.qty ? Math.round(buyTotal / stock.qty) : 0);
+
+    if (buyTotalEl) {
+      buyTotalEl.innerText = buyTotal > 0 ? (window.DashboardState.formatKoreanMoney(buyTotal) + '원') : '-';
+    }
+    if (buyPriceEl) {
+      buyPriceEl.innerText = buyPrice > 0 ? (window.DashboardState.formatNumber(buyPrice) + '원') : '-';
+    }
+
+    if (profitEl) {
+      if (buyTotal > 0 && stock.total > 0) {
+        const profitAmt = Math.round(stock.total - buyTotal);
+        const profitPct = ((profitAmt / buyTotal) * 100).toFixed(2);
+        if (profitAmt > 0) {
+          profitEl.className = "text-base font-bold text-red-600 tabular-nums mt-1";
+          profitEl.innerText = `+${window.DashboardState.formatKoreanMoney(profitAmt)}원 (+${profitPct}%)`;
+        } else if (profitAmt < 0) {
+          profitEl.className = "text-base font-bold text-blue-600 tabular-nums mt-1";
+          profitEl.innerText = `-${window.DashboardState.formatKoreanMoney(Math.abs(profitAmt))}원 (${profitPct}%)`;
+        } else {
+          profitEl.className = "text-base font-bold text-slate-500 tabular-nums mt-1";
+          profitEl.innerText = `0원 (0.00%)`;
+        }
+      } else {
+        profitEl.className = "text-base font-bold text-slate-500 tabular-nums mt-1";
+        profitEl.innerText = `-`;
+      }
+    }
 
     // 네이버 증권 외부 링크
     const naverLink = document.getElementById('modalNaverLink');
@@ -243,7 +284,7 @@ window.DashboardUI = {
       naverLink.href = `https://m.stock.naver.com/domestic/stock/${stock.code}/total`;
     }
 
-    // 최근 5일 시세 데이터 렌더링 (실제 5영업일 종가 & 거래일자 연동)
+    // 최근 20영업일(1개월) 시세 데이터 렌더링
     let sparklinePrices = stock.recentPrices;
     let sparklineDates = stock.recentDates;
     if (!sparklinePrices || sparklinePrices.length < 2) {
@@ -253,13 +294,25 @@ window.DashboardUI = {
       sparklineDates = ['전일', '오늘'];
     }
 
-    // 날짜 라벨 텍스트 업데이트
+    // 날짜 라벨 텍스트 업데이트 (1개월 전, 2주 전, 오늘)
     const daysEl = document.getElementById('modalSparklineDays');
     if (daysEl && sparklineDates && sparklineDates.length >= 2) {
-      daysEl.innerHTML = sparklineDates.map((d, i) => {
-        const isToday = i === sparklineDates.length - 1;
-        return `<span class="${isToday ? 'font-bold text-slate-700' : ''}">${d}</span>`;
-      }).join('');
+      const firstD = sparklineDates[0];
+      const midD = sparklineDates[Math.floor(sparklineDates.length / 2)];
+      const lastD = sparklineDates[sparklineDates.length - 1];
+      if (sparklineDates.length >= 15) {
+        daysEl.innerHTML = `
+          <span>1개월 전 (${firstD})</span>
+          <span>2주 전 (${midD})</span>
+          <span class="font-bold text-slate-800">오늘 (${lastD})</span>
+        `;
+      } else {
+        daysEl.innerHTML = `
+          <span>${firstD}</span>
+          <span>${midD}</span>
+          <span class="font-bold text-slate-800">오늘 (${lastD})</span>
+        `;
+      }
     }
 
     window.DashboardCharts.renderStockSparkline(sparklinePrices, sparklineDates, 'modalSparklineSvg', 'modalSparklineDiff');

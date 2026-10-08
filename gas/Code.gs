@@ -106,6 +106,8 @@ function doGet(e) {
         if (!code || !name || code.indexOf("합계") !== -1 || name.indexOf("합계") !== -1) continue;
 
         var price = Number(values[lastRowIdx][col]) || 0;
+        var buyPrice = Number(values[lastRowIdx][col + 2]) || 0;
+        var buyTotal = Number(values[lastRowIdx][col + 3]) || (buyPrice > 0 ? (qty * buyPrice) : 0);
         var qty = Number(values[lastRowIdx][col + 4]) || 0;
         var total = Number(values[lastRowIdx][col + 6]) || (qty * price);
 
@@ -116,7 +118,9 @@ function doGet(e) {
             name: name,
             qty: qty,
             price: price,
-            total: total
+            total: total,
+            buyPrice: buyPrice,
+            buyTotal: buyTotal
           });
         }
       }
@@ -129,7 +133,7 @@ function doGet(e) {
       var marketMap = pollResult.map || {};
       debugLog = pollResult.debug || "";
 
-      var history5Map = fetchStockHistory5Days(uniqueCodes);
+      var history20Map = fetchStockHistory20Days(uniqueCodes);
 
       for (var h = 0; h < holdingsList.length; h++) {
         var item = holdingsList[h];
@@ -146,9 +150,9 @@ function doGet(e) {
           item.changeRate = 0;
         }
 
-        if (history5Map[item.code]) {
-          item.recentPrices = history5Map[item.code].prices;
-          item.recentDates = history5Map[item.code].dates;
+        if (history20Map[item.code]) {
+          item.recentPrices = history20Map[item.code].prices;
+          item.recentDates = history20Map[item.code].dates;
         }
       }
     } catch (apiErr) {
@@ -220,12 +224,12 @@ function fetchStockPollingData(codes) {
   }
 }
 
-function fetchStockHistory5Days(codes) {
+function fetchStockHistory20Days(codes) {
   if (!codes || codes.length === 0) return {};
   var requests = [];
   for (var i = 0; i < codes.length; i++) {
     requests.push({
-      url: "https://m.stock.naver.com/api/stock/" + codes[i] + "/price?page=1&pageSize=5",
+      url: "https://m.stock.naver.com/api/stock/" + codes[i] + "/price?page=1&pageSize=20",
       method: "get",
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -260,7 +264,7 @@ function fetchStockHistory5Days(codes) {
       }
     }
   } catch (err) {
-    Logger.log("5-day history fetch error: " + err);
+    Logger.log("20-day history fetch error: " + err);
   }
   return historyMap;
 }

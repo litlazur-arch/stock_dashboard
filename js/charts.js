@@ -367,7 +367,7 @@ window.DashboardCharts = {
     svg.innerHTML = '';
 
     const width = svg.clientWidth || 320;
-    const height = svg.clientHeight || 80;
+    const height = svg.clientHeight || 96;
     const padX = 14;
     const padY = 12;
 
@@ -382,18 +382,19 @@ window.DashboardCharts = {
     const strokeColor = isUp ? "#ef4444" : "#3b82f6";
     const gradId = `sparkGrad_${Math.random().toString(36).substr(2, 6)}`;
 
-    // 5일 변동률 배지 업데이트
+    // 1개월 / 기간 변동률 배지 업데이트
     const diffEl = document.getElementById(diffId);
     if (diffEl) {
+      const periodLabel = prices.length >= 15 ? '1개월간' : `${prices.length}일간`;
       if (diffPct > 0) {
-        diffEl.className = "text-xs font-bold text-red-600 tabular-nums";
-        diffEl.innerText = `5일간 +${Math.abs(diffPct).toFixed(2)}%`;
+        diffEl.className = "text-sm sm:text-base font-bold text-red-600 tabular-nums";
+        diffEl.innerText = `${periodLabel} +${Math.abs(diffPct).toFixed(2)}%`;
       } else if (diffPct < 0) {
-        diffEl.className = "text-xs font-bold text-blue-600 tabular-nums";
-        diffEl.innerText = `5일간 -${Math.abs(diffPct).toFixed(2)}%`;
+        diffEl.className = "text-sm sm:text-base font-bold text-blue-600 tabular-nums";
+        diffEl.innerText = `${periodLabel} -${Math.abs(diffPct).toFixed(2)}%`;
       } else {
-        diffEl.className = "text-xs font-bold text-slate-500 tabular-nums";
-        diffEl.innerText = `5일간 0.00%`;
+        diffEl.className = "text-sm sm:text-base font-bold text-slate-500 tabular-nums";
+        diffEl.innerText = `${periodLabel} 0.00%`;
       }
     }
 
@@ -458,10 +459,10 @@ window.DashboardCharts = {
       const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
       circle.setAttribute("cx", pt.x);
       circle.setAttribute("cy", pt.y);
-      circle.setAttribute("r", pt.isLast ? "4.5" : "3");
+      circle.setAttribute("r", pt.isLast ? "4.5" : (prices.length > 10 ? "2" : "3"));
       circle.setAttribute("fill", pt.isLast ? strokeColor : "#ffffff");
       circle.setAttribute("stroke", strokeColor);
-      circle.setAttribute("stroke-width", "2");
+      circle.setAttribute("stroke-width", "1.5");
       circle.setAttribute("class", "cursor-pointer transition-transform hover:scale-125");
 
       const title = document.createElementNS("http://www.w3.org/2000/svg", "title");

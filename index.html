@@ -214,70 +214,91 @@
 
   <!-- 종목 상세 인앱 바텀시트 모달 (In-App Bottom Sheet Modal) -->
   <div id="stockModalBackdrop" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 transition-opacity duration-300 opacity-0 pointer-events-none flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div id="stockModalCard" class="w-full max-w-[480px] bg-white border border-slate-200 rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl transition-all duration-300 transform translate-y-full sm:translate-y-4 sm:scale-95 space-y-4 max-h-[90vh] overflow-y-auto">
+    <div id="stockModalCard" class="w-full max-w-[480px] bg-white border border-slate-200 rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 shadow-2xl transition-all duration-300 transform translate-y-full sm:translate-y-4 sm:scale-95 space-y-4 max-h-[92vh] overflow-y-auto">
       
-      <!-- 1. 상단 타이틀 & 닫기 버튼 -->
+      <!-- 1. 상단 타이틀 & 계좌 배지 & 닫기 버튼 -->
       <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
+        <div class="flex items-center gap-3 min-w-0 flex-1 pr-2">
           <div class="w-3.5 h-3.5 rounded-full shrink-0" id="modalColorDot"></div>
-          <div>
-            <h3 class="text-lg font-bold text-slate-900 leading-tight" id="modalStockName">-</h3>
-            <span class="text-xs text-slate-400 tabular-nums" id="modalStockCode">-</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="text-xl font-bold text-slate-900 leading-snug truncate" id="modalStockName">-</h3>
+              <span class="px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold bg-blue-50 text-blue-700 border border-blue-200/70 shrink-0" id="modalAccountBadge">위탁</span>
+            </div>
+            <span class="text-xs sm:text-sm text-slate-400 font-medium tabular-nums" id="modalStockCode">-</span>
           </div>
         </div>
-        <button onclick="window.DashboardUI.closeStockModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold flex items-center justify-center transition-colors">
+        <button onclick="window.DashboardUI.closeStockModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold flex items-center justify-center transition-colors shrink-0 text-base" aria-label="닫기">
           ✕
         </button>
       </div>
 
-      <!-- 2. 현재가 & 전일 대비 등락률 -->
-      <div class="flex items-baseline justify-between border-y border-slate-100 py-3">
+      <!-- 2. 현재가 & 전일 대비 등락률 (14px 라벨 / 24px 금액 / 16px 등락) -->
+      <div class="flex items-baseline justify-between border-y border-slate-100 py-3 px-0.5">
         <div>
-          <div class="text-xs text-slate-400">현재가</div>
-          <div class="text-2xl font-bold text-slate-900 tabular-nums tracking-tight" id="modalPrice">-원</div>
+          <div class="text-xs sm:text-sm text-slate-500 font-medium">현재가</div>
+          <div class="text-2xl font-bold text-slate-900 tabular-nums tracking-tight mt-0.5" id="modalPrice">-원</div>
         </div>
         <div class="text-right">
-          <div class="text-xs text-slate-400">전일 대비</div>
+          <div class="text-xs sm:text-sm text-slate-500 font-medium">전일 대비</div>
           <div class="text-base font-bold tabular-nums mt-0.5" id="modalChangeRate">-</div>
         </div>
       </div>
 
-      <!-- 3. 최근 5일 주가 추이 미니 스파크라인 차트 -->
-      <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-2">
+      <!-- 3. 최근 20영업일 (1개월) 주가 추이 스파크라인 차트 -->
+      <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 space-y-2.5">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-slate-700">최근 5일 주가 추이</span>
-          <span class="text-xs font-semibold tabular-nums" id="modalSparklineDiff">-</span>
+          <span class="text-sm sm:text-base font-bold text-slate-800">최근 1개월 주가 추이</span>
+          <span class="text-sm sm:text-base font-bold tabular-nums" id="modalSparklineDiff">-</span>
         </div>
-        <div class="h-20 w-full relative">
+        <div class="h-24 w-full relative">
           <svg class="w-full h-full overflow-visible" id="modalSparklineSvg"></svg>
         </div>
-        <div class="flex justify-between items-center text-[10px] text-slate-400 px-1 pt-1 border-t border-slate-200/60" id="modalSparklineDays">
-          <span>D-4</span><span>D-3</span><span>D-2</span><span>D-1</span><span class="font-bold text-slate-700">오늘</span>
+        <div class="flex justify-between items-center text-xs sm:text-sm text-slate-500 font-medium px-1 pt-1.5 border-t border-slate-200/70" id="modalSparklineDays">
+          <span>1개월 전</span><span>2주 전</span><span class="font-bold text-slate-800">오늘</span>
         </div>
       </div>
 
-      <!-- 4. 보유 현황 요약 (수량, 평가금액, 비중) -->
-      <div class="grid grid-cols-3 gap-2 bg-slate-50 border border-slate-100 p-3 rounded-xl text-center">
-        <div>
-          <div class="text-xs text-slate-400">보유 수량</div>
-          <div class="text-sm font-bold text-slate-800 tabular-nums mt-0.5" id="modalQty">-주</div>
+      <!-- 4. 내 투자 현황 및 손익 (2×3 모던 인포 그리드) -->
+      <div class="grid grid-cols-2 gap-2.5">
+        <!-- 1. 보유 수량 -->
+        <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-xl">
+          <div class="text-xs sm:text-sm text-slate-500 font-medium">보유 수량</div>
+          <div class="text-base font-bold text-slate-900 tabular-nums mt-1" id="modalQty">-주</div>
         </div>
-        <div>
-          <div class="text-xs text-slate-400">평가 금액</div>
-          <div class="text-sm font-bold text-slate-800 tabular-nums mt-0.5" id="modalTotal">-만원</div>
+        <!-- 2. 계좌 내 비중 -->
+        <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-xl">
+          <div class="text-xs sm:text-sm text-slate-500 font-medium">계좌 내 비중</div>
+          <div class="text-base font-bold text-indigo-600 tabular-nums mt-1" id="modalRatio">-%</div>
         </div>
-        <div>
-          <div class="text-xs text-slate-400">계좌 내 비중</div>
-          <div class="text-sm font-bold text-indigo-600 tabular-nums mt-0.5" id="modalRatio">-%</div>
+        <!-- 3. 평가 금액 -->
+        <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-xl">
+          <div class="text-xs sm:text-sm text-slate-500 font-medium">평가 금액</div>
+          <div class="text-base font-bold text-slate-900 tabular-nums mt-1" id="modalTotal">-원</div>
+        </div>
+        <!-- 4. 매수 금액 (원금) -->
+        <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-xl">
+          <div class="text-xs sm:text-sm text-slate-500 font-medium">매수 금액 (원금)</div>
+          <div class="text-base font-bold text-slate-900 tabular-nums mt-1" id="modalBuyTotal">-원</div>
+        </div>
+        <!-- 5. 매수 단가 (평균) -->
+        <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-xl">
+          <div class="text-xs sm:text-sm text-slate-500 font-medium">매수 단가 (평균)</div>
+          <div class="text-base font-bold text-slate-900 tabular-nums mt-1" id="modalBuyPrice">-원</div>
+        </div>
+        <!-- 6. 누적 평가 손익 -->
+        <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-xl">
+          <div class="text-xs sm:text-sm text-slate-500 font-medium">누적 평가 손익</div>
+          <div class="text-base font-bold tabular-nums mt-1" id="modalProfit">-</div>
         </div>
       </div>
 
-      <!-- 5. 네이버 페이 증권 외부 바로가기 버튼 -->
+      <!-- 5. 네이버 페이 증권 외부 바로가기 버튼 (14px) -->
       <a id="modalNaverLink" href="#" target="_blank" rel="noopener noreferrer"
-        class="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-center flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]">
-        <span class="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center font-black text-[10px]">N</span>
-        <span class="text-xs">네이버 페이 증권에서 더보기</span>
-        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        class="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-center flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98] text-sm mt-2">
+        <span class="w-4.5 h-4.5 rounded-full bg-emerald-500 text-white flex items-center justify-center font-black text-[11px]">N</span>
+        <span>네이버 페이 증권에서 종목 상세 보기</span>
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
         </svg>
       </a>
