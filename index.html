@@ -34,146 +34,176 @@
 
   <!-- 메인 모바일 카드 뷰 컨테이너 (Galaxy S25 Ultra / S26 Plus 480px 기준 최적화) -->
   <div
-    class="w-full max-w-[480px] bg-white border-0 sm:border sm:border-slate-200 rounded-none sm:rounded-2xl shadow-none sm:shadow-xl overflow-hidden flex flex-col my-0 sm:my-3">
+    class="w-full max-w-[480px] bg-white border-0 sm:border sm:border-slate-200 rounded-none sm:rounded-2xl shadow-none sm:shadow-xl overflow-hidden flex flex-col my-0 sm:my-3 min-h-[420px]">
 
-
-
-    <!-- 대시보드 타이틀 및 총 자산 요약 헤더 -->
-    <section class="px-3 pt-3 pb-2">
-      <!-- 1행: 상단 라벨 (14px) -->
-      <div class="flex items-center justify-between text-sm">
-        <span class="font-semibold text-blue-600 tracking-tight" id="userTitleLabel">포트폴리오 Ⓙ</span>
-        <span class="text-slate-500 font-medium">총 평가 자산</span>
+    <!-- 1. 시스템 점검 및 서비스 준비 중 위장 화면 (Fake Maintenance View: 파라미터 미제공 시 표시) -->
+    <div id="fakeMaintenanceBox" class="hidden p-8 sm:p-12 flex flex-col items-center justify-center text-center space-y-6 my-auto">
+      <div class="w-16 h-16 rounded-2xl bg-slate-100 border border-slate-200/90 flex items-center justify-center shadow-xs">
+        <svg class="w-8 h-8 text-slate-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        </svg>
       </div>
-      <!-- 2행: 메인 타이틀 및 평가 자산 금액 (24px, items-baseline 밑선 일치) -->
-      <div class="flex items-baseline justify-between mt-1">
-        <h1 class="text-2xl font-bold text-slate-900 tracking-tight" id="currentAccountTitle">
-          위탁
-        </h1>
-        <div class="text-right">
-          <div class="text-2xl font-bold text-slate-900 tracking-tight tabular-nums" id="headerTotalAsset">
-            - 원
-          </div>
-          <!-- 3행: 전일 대비 증감액 (16px, 원 단위) -->
-          <div class="text-base font-bold tabular-nums mt-0.5" id="headerTotalAssetDiff">
-            -
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- 계좌 선택 탭 바 (모바일 100% 균등 분할 & 3D 플로팅 글래스 탭) -->
-    <nav class="px-2.5 py-1.5 border-b border-slate-200">
-      <div class="p-1 rounded-xl bg-slate-100 border border-slate-200/80 shadow-inner flex gap-1 items-center w-full" id="accountTabsContainer">
-        <!-- js/ui.js에서 동적 생성 -->
+      <div class="space-y-2">
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+          SYSTEM MAINTENANCE
+        </span>
+        <h2 class="text-xl font-bold text-slate-800 tracking-tight pt-1">
+          서비스 점검 중입니다
+        </h2>
+        <p class="text-xs text-slate-500 leading-relaxed max-w-[280px] mx-auto">
+          현재 시스템 안정화 및 정기 점검 작업이 진행 중입니다.<br>잠시 후 다시 접속해 주세요.
+        </p>
       </div>
-    </nav>
 
-    <!-- 데이터 로딩 스피너 -->
-    <div id="loadingBox" class="p-14 flex flex-col items-center justify-center space-y-3">
-      <div class="w-9 h-9 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-      <p class="text-sm font-semibold text-slate-500">Google Sheets 실시간 데이터 동기화 중...</p>
+      <div class="w-full pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 px-2">
+        <span>상태: <strong class="text-slate-600 font-medium">정기 점검</strong></span>
+        <span id="maintenanceTime">2026.10.08</span>
+      </div>
     </div>
 
-    <!-- 대시보드 메인 콘텐츠 영역 (보유 종목 최상단 배치 및 최적화된 위계) -->
-    <main id="mainContent" class="p-2 sm:p-3 space-y-2.5 sm:space-y-3.5 overflow-y-auto hidden">
+    <!-- 2. 실제 금융 대시보드 뷰 영역 (?u=j 또는 ?u=k 접속 시 활성화) -->
+    <div id="dashboardAppView" class="flex flex-col flex-1">
 
-      <!-- 1단: 보유 종목 상세 리스트 카드 (최상단 우선 노출) -->
-      <article class="bg-slate-50 border border-slate-200/90 rounded-xl p-2.5 sm:p-3.5 shadow-2xs">
-        <div class="flex items-center justify-between mb-2 sm:mb-2.5">
-          <div class="flex items-center gap-2">
-            <div class="w-2 h-4 rounded-full bg-emerald-600"></div>
-            <h2 class="text-lg font-bold text-slate-800">보유 종목</h2>
+      <!-- 대시보드 타이틀 및 총 자산 요약 헤더 -->
+      <section class="px-3 pt-3 pb-2">
+        <!-- 1행: 상단 라벨 (14px) -->
+        <div class="flex items-center justify-between text-sm">
+          <span class="font-semibold text-blue-600 tracking-tight" id="userTitleLabel">포트폴리오 Ⓙ</span>
+          <span class="text-slate-500 font-medium">총 평가 자산</span>
+        </div>
+        <!-- 2행: 메인 타이틀 및 평가 자산 금액 (24px, items-baseline 밑선 일치) -->
+        <div class="flex items-baseline justify-between mt-1">
+          <h1 class="text-2xl font-bold text-slate-900 tracking-tight" id="currentAccountTitle">
+            위탁
+          </h1>
+          <div class="text-right">
+            <div class="text-2xl font-bold text-slate-900 tracking-tight tabular-nums" id="headerTotalAsset">
+              - 원
+            </div>
+            <!-- 3행: 전일 대비 증감액 (16px, 원 단위) -->
+            <div class="text-base font-bold tabular-nums mt-0.5" id="headerTotalAssetDiff">
+              -
+            </div>
           </div>
         </div>
+      </section>
 
-        <div class="space-y-2" id="stockListContainer">
-          <!-- 동적 카드 또는 스켈레톤 로드 -->
+      <!-- 계좌 선택 탭 바 (모바일 100% 균등 분할 & 3D 플로팅 글래스 탭) -->
+      <nav class="px-2.5 py-1.5 border-b border-slate-200">
+        <div class="p-1 rounded-xl bg-slate-100 border border-slate-200/80 shadow-inner flex gap-1 items-center w-full" id="accountTabsContainer">
+          <!-- js/ui.js에서 동적 생성 -->
         </div>
-      </article>
+      </nav>
 
-      <!-- 2단: 최근 12개월 자산 막대그래프 -->
-      <article class="bg-slate-50 border border-slate-200/90 rounded-xl p-2.5 sm:p-3.5 shadow-2xs">
-        <div class="flex items-center justify-between mb-2 sm:mb-2.5">
-          <div class="flex items-center gap-2">
-            <div class="w-2 h-4 rounded-full bg-blue-600"></div>
-            <h2 class="text-lg font-bold text-slate-800">최근 12개월 자산</h2>
-          </div>
-          <span class="text-base font-semibold text-blue-600" id="assetGrowthLabel">-</span>
-        </div>
-        <div class="h-40 w-full relative">
-          <svg class="w-full h-full overflow-visible" id="assetBarChartSvg"></svg>
-        </div>
-        <div class="flex justify-between items-center text-xs text-slate-500 mt-2 sm:mt-2.5 pt-2 border-t border-slate-200">
-          <span>최저: <strong class="text-slate-800 font-semibold text-base" id="assetMinVal">-</strong></span>
-          <span>최고: <strong class="text-slate-800 font-semibold text-base" id="assetMaxVal">-</strong></span>
-        </div>
-      </article>
-
-      <!-- 3단: 배당금 막대그래프 -->
-      <article class="bg-slate-50 border border-slate-200/90 rounded-xl p-2.5 sm:p-3.5 shadow-2xs">
-        <div class="flex items-center justify-between mb-2 sm:mb-2.5">
-          <div class="flex items-center gap-2">
-            <div class="w-2 h-4 rounded-full bg-amber-500"></div>
-            <h2 class="text-lg font-bold text-slate-800">배당금</h2>
-          </div>
-          <span class="text-base font-semibold text-amber-600" id="latestDividendLabel">-</span>
-        </div>
-        <div class="h-32 w-full relative">
-          <svg class="w-full h-full overflow-visible" id="dividendBarChartSvg"></svg>
-        </div>
-        <div class="flex justify-between items-center text-xs text-slate-500 mt-2 sm:mt-2.5 pt-2 border-t border-slate-200">
-          <span>연간 누적 배당: <strong class="text-amber-600 font-bold text-base" id="totalDividendYear">-</strong></span>
-          <span>월평균: <strong class="text-slate-800 font-semibold text-base" id="avgDividendMonth">-</strong></span>
-        </div>
-      </article>
-
-      <!-- 4단: 보유 종목 비율 트리맵 (Treemap) -->
-      <article class="bg-slate-50 border border-slate-200/90 rounded-xl p-2.5 sm:p-3.5 shadow-2xs">
-        <div class="flex items-center justify-between mb-2 sm:mb-2.5">
-          <div class="flex items-center gap-2">
-            <div class="w-2 h-4 rounded-full bg-indigo-600"></div>
-            <h2 class="text-lg font-bold text-slate-800">보유 종목 비율 (트리맵)</h2>
-          </div>
-          <span class="text-base font-semibold text-slate-600" id="stockCountBadge">0개 종목</span>
-        </div>
-
-        <!-- 트리맵 인터랙티브 영역 -->
-        <div class="w-full h-56 relative overflow-hidden bg-slate-200/60 border border-slate-200 rounded-lg select-none"
-          id="ratioTreemapContainer">
-        </div>
-
-        <!-- 안내 캡션 (12px) -->
-        <div class="flex items-center justify-between text-xs text-slate-400 mt-2 px-0.5">
-          <span>💡 타일 터치 시 해당 종목 카드로 이동</span>
-          <span class="text-indigo-600 font-medium">면적 = 평가액 비중</span>
-        </div>
-      </article>
-
-    </main>
-
-    <!-- 하단 푸터 (연동 상태 점, 갱신 시간 및 새로고침 버튼 결합 - 12px) -->
-    <footer
-      class="bg-slate-50 border-t border-slate-200 px-3 py-2 text-xs text-slate-500 flex justify-between items-center">
-      <div class="flex items-center gap-1.5 min-w-0">
-        <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" id="statusDot"></span>
-        <span id="lastUpdatedTime" class="tabular-nums truncate font-medium text-slate-600">동기화 대기 중</span>
-        <span class="mx-0.5 text-slate-300 shrink-0">|</span>
-        <span class="text-slate-400 shrink-0 text-xs">Google Sheets</span>
+      <!-- 데이터 로딩 스피너 -->
+      <div id="loadingBox" class="p-14 flex flex-col items-center justify-center space-y-3">
+        <div class="w-9 h-9 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-sm font-semibold text-slate-500">Google Sheets 실시간 데이터 동기화 중...</p>
       </div>
 
-      <!-- 새로고침 버튼 (12px) -->
-      <button onclick="window.DashboardApp.loadData()"
-        class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200/80 transition-all flex items-center gap-1.5 shrink-0 shadow-2xs active:scale-95"
-        title="데이터 새로고침">
-        <svg class="w-3.5 h-3.5 text-slate-500" id="refreshIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-          </path>
-        </svg>
-        <span class="text-xs font-semibold">새로고침</span>
-      </button>
-    </footer>
+      <!-- 대시보드 메인 콘텐츠 영역 (보유 종목 최상단 배치 및 최적화된 위계) -->
+      <main id="mainContent" class="p-2 sm:p-3 space-y-2.5 sm:space-y-3.5 overflow-y-auto hidden">
+
+        <!-- 1단: 보유 종목 상세 리스트 카드 (최상단 우선 노출) -->
+        <article class="bg-slate-50 border border-slate-200/90 rounded-xl p-2.5 sm:p-3.5 shadow-2xs">
+          <div class="flex items-center justify-between mb-2 sm:mb-2.5">
+            <div class="flex items-center gap-2">
+              <div class="w-2 h-4 rounded-full bg-emerald-600"></div>
+              <h2 class="text-lg font-bold text-slate-800">보유 종목</h2>
+            </div>
+          </div>
+
+          <div class="space-y-2" id="stockListContainer">
+            <!-- 동적 카드 또는 스켈레톤 로드 -->
+          </div>
+        </article>
+
+        <!-- 2단: 최근 12개월 자산 막대그래프 -->
+        <article class="bg-slate-50 border border-slate-200/90 rounded-xl p-2.5 sm:p-3.5 shadow-2xs">
+          <div class="flex items-center justify-between mb-2 sm:mb-2.5">
+            <div class="flex items-center gap-2">
+              <div class="w-2 h-4 rounded-full bg-blue-600"></div>
+              <h2 class="text-lg font-bold text-slate-800">최근 12개월 자산</h2>
+            </div>
+            <span class="text-base font-semibold text-blue-600" id="assetGrowthLabel">-</span>
+          </div>
+          <div class="h-40 w-full relative">
+            <svg class="w-full h-full overflow-visible" id="assetBarChartSvg"></svg>
+          </div>
+          <div class="flex justify-between items-center text-xs text-slate-500 mt-2 sm:mt-2.5 pt-2 border-t border-slate-200">
+            <span>최저: <strong class="text-slate-800 font-semibold text-base" id="assetMinVal">-</strong></span>
+            <span>최고: <strong class="text-slate-800 font-semibold text-base" id="assetMaxVal">-</strong></span>
+          </div>
+        </article>
+
+        <!-- 3단: 배당금 막대그래프 -->
+        <article class="bg-slate-50 border border-slate-200/90 rounded-xl p-2.5 sm:p-3.5 shadow-2xs">
+          <div class="flex items-center justify-between mb-2 sm:mb-2.5">
+            <div class="flex items-center gap-2">
+              <div class="w-2 h-4 rounded-full bg-amber-500"></div>
+              <h2 class="text-lg font-bold text-slate-800">배당금</h2>
+            </div>
+            <span class="text-base font-semibold text-amber-600" id="latestDividendLabel">-</span>
+          </div>
+          <div class="h-32 w-full relative">
+            <svg class="w-full h-full overflow-visible" id="dividendBarChartSvg"></svg>
+          </div>
+          <div class="flex justify-between items-center text-xs text-slate-500 mt-2 sm:mt-2.5 pt-2 border-t border-slate-200">
+            <span>연간 누적 배당: <strong class="text-amber-600 font-bold text-base" id="totalDividendYear">-</strong></span>
+            <span>월평균: <strong class="text-slate-800 font-semibold text-base" id="avgDividendMonth">-</strong></span>
+          </div>
+        </article>
+
+        <!-- 4단: 보유 종목 비율 트리맵 (Treemap) -->
+        <article class="bg-slate-50 border border-slate-200/90 rounded-xl p-2.5 sm:p-3.5 shadow-2xs">
+          <div class="flex items-center justify-between mb-2 sm:mb-2.5">
+            <div class="flex items-center gap-2">
+              <div class="w-2 h-4 rounded-full bg-indigo-600"></div>
+              <h2 class="text-lg font-bold text-slate-800">보유 종목 비율 (트리맵)</h2>
+            </div>
+            <span class="text-base font-semibold text-slate-600" id="stockCountBadge">0개 종목</span>
+          </div>
+
+          <!-- 트리맵 인터랙티브 영역 -->
+          <div class="w-full h-56 relative overflow-hidden bg-slate-200/60 border border-slate-200 rounded-lg select-none"
+            id="ratioTreemapContainer">
+          </div>
+
+          <!-- 안내 캡션 (12px) -->
+          <div class="flex items-center justify-between text-xs text-slate-400 mt-2 px-0.5">
+            <span>💡 타일 터치 시 해당 종목 카드로 이동</span>
+            <span class="text-indigo-600 font-medium">면적 = 평가액 비중</span>
+          </div>
+        </article>
+
+      </main>
+
+      <!-- 하단 푸터 (연동 상태 점, 갱신 시간 및 새로고침 버튼 결합 - 12px) -->
+      <footer
+        class="bg-slate-50 border-t border-slate-200 px-3 py-2 text-xs text-slate-500 flex justify-between items-center">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" id="statusDot"></span>
+          <span id="lastUpdatedTime" class="tabular-nums truncate font-medium text-slate-600">동기화 대기 중</span>
+          <span class="mx-0.5 text-slate-300 shrink-0">|</span>
+          <span class="text-slate-400 shrink-0 text-xs">Google Sheets</span>
+        </div>
+
+        <!-- 새로고침 버튼 (12px) -->
+        <button onclick="window.DashboardApp.loadData()"
+          class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200/80 transition-all flex items-center gap-1.5 shrink-0 shadow-2xs active:scale-95"
+          title="데이터 새로고침">
+          <svg class="w-3.5 h-3.5 text-slate-500" id="refreshIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+            </path>
+          </svg>
+          <span class="text-xs font-semibold">새로고침</span>
+        </button>
+      </footer>
+
+    </div>
 
   </div>
 

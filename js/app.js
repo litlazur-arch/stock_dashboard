@@ -12,11 +12,22 @@ window.DashboardApp = {
   async init() {
     // 1. URL 쿼리 파라미터 확인 (?u=k 또는 ?u=j)
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('u') === 'k') {
-      window.DashboardState.currentUser = 'k';
-    } else {
-      window.DashboardState.currentUser = 'j';
+    const userParam = urlParams.get('u');
+
+    // 유효한 사용자 파라미터(?u=j 또는 ?u=k)가 없는 경우 Fake 점검 화면 노출 & API 호출 차단
+    if (userParam !== 'j' && userParam !== 'k') {
+      this.renderFakeMaintenanceView();
+      return;
     }
+
+    // 정상 사용자 설정
+    window.DashboardState.currentUser = userParam;
+
+    // 대시보드 뷰 활성화 및 점검 화면 숨김
+    const appView = document.getElementById('dashboardAppView');
+    const fakeBox = document.getElementById('fakeMaintenanceBox');
+    if (appView) appView.classList.remove('hidden');
+    if (fakeBox) fakeBox.classList.add('hidden');
 
     // Default로 첫번째 보여주는 메뉴는 위탁 계좌(인덱스 1)로 설정
     window.DashboardState.currentAccountIndex = 1;
@@ -53,6 +64,27 @@ window.DashboardApp = {
 
     // 4. 백그라운드 실시간 최신 데이터 동기화
     await this.loadData();
+  },
+
+  /**
+   * 루트 접속 시 노출할 시스템 점검 위장 화면 렌더링
+   */
+  renderFakeMaintenanceView() {
+    const appView = document.getElementById('dashboardAppView');
+    const fakeBox = document.getElementById('fakeMaintenanceBox');
+    const timeEl = document.getElementById('maintenanceTime');
+
+    if (appView) appView.classList.add('hidden');
+    if (fakeBox) {
+      fakeBox.classList.remove('hidden');
+      if (timeEl) {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        timeEl.innerText = `${y}.${m}.${d}`;
+      }
+    }
   },
 
   /**
