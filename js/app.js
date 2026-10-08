@@ -245,56 +245,39 @@ window.DashboardApp = {
       growthEl.innerText = (pct >= 0 ? '+' : '') + pct + '% (12개월)';
     }
 
-    // 5. 통합 계좌 제외 개별 계좌 간 공통 스케일 계산 (개별 계좌 간 스케일 일치화)
+    // 5. 통합 계좌 제외 개별 계좌 간 배당금 공통 스케일 계산 (배당금 스케일 통합 유지)
     const isTotalAccount = activeAccount.id === 'all' || activeAccount.id === 'all_k' || (activeAccount.name && activeAccount.name.includes('통합'));
     const individualAccounts = accounts.filter(acc => acc.id !== 'all' && acc.id !== 'all_k' && !(acc.name && acc.name.includes('통합')));
 
-    let customScaleMinAsset = undefined;
-    let customScaleMaxAsset = undefined;
     let customScaleMaxDiv = undefined;
 
     if (!isTotalAccount && individualAccounts.length > 0 && rawData.history) {
-      const allIndivMonthlyAssets = [];
       const allIndivMonthlyDivs = [];
 
       individualAccounts.forEach(indivAcc => {
-        rawData.history.forEach((row, rIdx) => {
-          let a = 0;
+        rawData.history.forEach(row => {
           let d = 0;
           indivAcc.filter.forEach(accName => {
-            if (accName === "위탁Ⓚ") { a += row.brokerK_Asset; d += row.brokerK_Div; }
-            else if (accName === "위탁Ⓙ") { a += row.brokerJ_Asset; d += row.brokerJ_Div; }
-            else if (accName === "개인연금Ⓚ") { a += row.pensionK_Asset; d += row.pensionK_Div; }
-            else if (accName === "개인연금Ⓙ") { a += row.pensionJ_Asset; d += row.pensionJ_Div; }
-            else if (accName === "퇴직연금") { a += row.retire_Asset; d += row.retire_Div; }
-            else if (accName === "IRP") { a += row.irp_Asset; d += row.irp_Div; }
-            else if (accName === "TLPⓀ") { a += (row.tlpK_Asset || 0); d += (row.tlpK_Div || 0); }
-            else if (accName === "TLPⒿ") { a += (row.tlpJ_Asset || 0); d += (row.tlpJ_Div || 0); }
+            if (accName === "위탁Ⓚ") { d += row.brokerK_Div; }
+            else if (accName === "위탁Ⓙ") { d += row.brokerJ_Div; }
+            else if (accName === "개인연금Ⓚ") { d += row.pensionK_Div; }
+            else if (accName === "개인연금Ⓙ") { d += row.pensionJ_Div; }
+            else if (accName === "퇴직연금") { d += row.retire_Div; }
+            else if (accName === "IRP") { d += row.irp_Div; }
+            else if (accName === "TLPⓀ") { d += (row.tlpK_Div || 0); }
+            else if (accName === "TLPⒿ") { d += (row.tlpJ_Div || 0); }
           });
-
-          // 당월(마지막 행)은 실시간 현재가 평가액 반영
-          if (rIdx === rawData.history.length - 1 && rawData.holdings) {
-            const liveHoldings = rawData.holdings.filter(h => indivAcc.filter.includes(h.account));
-            const liveTotal = liveHoldings.reduce((sum, h) => sum + h.total, 0);
-            if (liveTotal > 0) a = liveTotal;
-          }
-
-          if (a > 0) allIndivMonthlyAssets.push(a);
           if (d > 0) allIndivMonthlyDivs.push(d);
         });
       });
 
-      if (allIndivMonthlyAssets.length > 0) {
-        customScaleMaxAsset = Math.max(...allIndivMonthlyAssets);
-        customScaleMinAsset = 0; // 0원 바닥 기준 스케일
-      }
       if (allIndivMonthlyDivs.length > 0) {
         customScaleMaxDiv = Math.max(...allIndivMonthlyDivs);
       }
     }
 
-    // 6. 차트 모듈 호출 (상하 2단 분리 막대 & 트리맵 비중 차트)
-    window.DashboardCharts.renderAssetBarChart(historyData, 'assetBarChartSvg', 'assetMinVal', 'assetMaxVal', customScaleMinAsset, customScaleMaxAsset);
+    // 6. 차트 모듈 호출 (자산: 계좌별 고유 스케일 롤백, 배당금: 개별 계좌 간 통합 스케일 유지)
+    window.DashboardCharts.renderAssetBarChart(historyData, 'assetBarChartSvg', 'assetMinVal', 'assetMaxVal');
     window.DashboardCharts.renderDividendBarChart(historyData, 'dividendBarChartSvg', 'latestDividendLabel', 'totalDividendYear', 'avgDividendMonth', customScaleMaxDiv);
     window.DashboardCharts.renderRatioTreemap(matchedHoldings, currentTotalAsset, 'ratioTreemapContainer', 'stockCountBadge');
 
