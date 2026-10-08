@@ -17,24 +17,24 @@ window.DashboardCharts = {
   /**
    * 최근 12개월 총 자산 막대그래프를 렌더링합니다.
    */
-  renderAssetBarChart(history, svgId, minId, maxId) {
+  renderAssetBarChart(history, svgId, minId, maxId, customMin, customMax) {
     const svg = document.getElementById(svgId);
     if (!svg || !history || history.length === 0) return;
     svg.innerHTML = '';
 
     const width = svg.clientWidth || 320;
-    const height = svg.clientHeight || 140;
+    const height = svg.clientHeight || 190;
 
     const assets = history.map(d => d.asset);
-    const maxVal = Math.max(...assets);
-    const minVal = Math.min(...assets) * 0.96;
+    const maxVal = (customMax !== undefined) ? customMax : Math.max(...assets);
+    const minVal = (customMin !== undefined) ? customMin : (Math.min(...assets) * 0.96);
     const barWidth = Math.max(12, (width / history.length) - 6);
 
-    // 요약 레이블 업데이트
+    // 요약 레이블 업데이트 (해당 계좌의 실제 12개월 최저/최고값 표시)
     const minEl = document.getElementById(minId);
     if (minEl) minEl.innerText = window.DashboardState.formatKoreanMoney(Math.min(...assets)) + '원';
     const maxEl = document.getElementById(maxId);
-    if (maxEl) maxEl.innerText = window.DashboardState.formatKoreanMoney(maxVal) + '원';
+    if (maxEl) maxEl.innerText = window.DashboardState.formatKoreanMoney(Math.max(...assets)) + '원';
 
     history.forEach((item, idx) => {
       const x = idx * (width / history.length) + (width / history.length - barWidth) / 2;
@@ -97,16 +97,16 @@ window.DashboardCharts = {
   /**
    * 최근 12개월 배당금 수령액 막대그래프를 렌더링합니다.
    */
-  renderDividendBarChart(history, svgId, latestId, totalYearId, avgId) {
+  renderDividendBarChart(history, svgId, latestId, totalYearId, avgId, customMax) {
     const svg = document.getElementById(svgId);
     if (!svg || !history || history.length === 0) return;
     svg.innerHTML = '';
 
     const width = svg.clientWidth || 320;
-    const height = svg.clientHeight || 110;
+    const height = svg.clientHeight || 155;
 
     const divs = history.map(d => d.div);
-    const maxVal = Math.max(...divs);
+    const maxVal = (customMax !== undefined) ? customMax : Math.max(...divs, 1000);
     const barWidth = Math.max(12, (width / history.length) - 6);
 
     const latestDiv = divs[divs.length - 1] || 0;
@@ -387,10 +387,10 @@ window.DashboardCharts = {
     if (diffEl) {
       if (diffPct > 0) {
         diffEl.className = "text-xs font-bold text-red-600 tabular-nums";
-        diffEl.innerText = `5일간 ▲ +${diffPct.toFixed(2)}%`;
+        diffEl.innerText = `5일간 +${Math.abs(diffPct).toFixed(2)}%`;
       } else if (diffPct < 0) {
         diffEl.className = "text-xs font-bold text-blue-600 tabular-nums";
-        diffEl.innerText = `5일간 ▼ ${diffPct.toFixed(2)}%`;
+        diffEl.innerText = `5일간 -${Math.abs(diffPct).toFixed(2)}%`;
       } else {
         diffEl.className = "text-xs font-bold text-slate-500 tabular-nums";
         diffEl.innerText = `5일간 0.00%`;

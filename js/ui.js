@@ -54,7 +54,7 @@ window.DashboardUI = {
         const rest = norm.slice(b.length).trim();
         if (rest) {
           return `
-            <div class="text-xs font-semibold text-slate-400 tracking-tight leading-none mb-1">${b}</div>
+            <div class="text-lg font-bold text-slate-900 tracking-tight leading-snug">${b}</div>
             <div class="text-lg font-bold text-slate-900 tracking-tight leading-snug break-keep">${rest}</div>
           `;
         }
@@ -149,13 +149,15 @@ window.DashboardUI = {
       let diffRateHtml = '';
 
       if (rateNum > 0 || diffAmtNum > 0) {
-        const amtStr = diffAmtNum > 0 ? `+${window.DashboardState.formatNumber(diffAmtNum)}원` : `+${window.DashboardState.formatNumber(Math.round(item.price * rateNum / 100))}원`;
-        diffAmtHtml = `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight">▲ ${amtStr}</span>`;
-        diffRateHtml = `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight">▲ +${rateNum.toFixed(2)}%</span>`;
+        const absAmt = Math.abs(diffAmtNum || Math.round(item.price * rateNum / 100));
+        const absRate = Math.abs(rateNum);
+        diffAmtHtml = `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight">+${window.DashboardState.formatNumber(absAmt)}원</span>`;
+        diffRateHtml = `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight">+${absRate.toFixed(2)}%</span>`;
       } else if (rateNum < 0 || diffAmtNum < 0) {
-        const amtStr = diffAmtNum < 0 ? `${window.DashboardState.formatNumber(diffAmtNum)}원` : `${window.DashboardState.formatNumber(Math.round(item.price * rateNum / 100))}원`;
-        diffAmtHtml = `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight">▼ ${amtStr}</span>`;
-        diffRateHtml = `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight">▼ ${rateNum.toFixed(2)}%</span>`;
+        const absAmt = Math.abs(diffAmtNum || Math.round(item.price * rateNum / 100));
+        const absRate = Math.abs(rateNum);
+        diffAmtHtml = `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight">-${window.DashboardState.formatNumber(absAmt)}원</span>`;
+        diffRateHtml = `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight">-${absRate.toFixed(2)}%</span>`;
       } else {
         diffAmtHtml = `<span class="text-sm font-medium text-slate-500 tabular-nums tracking-tight">0원</span>`;
         diffRateHtml = `<span class="text-sm font-medium text-slate-500 tabular-nums tracking-tight">0.00%</span>`;
@@ -163,7 +165,7 @@ window.DashboardUI = {
 
       card.innerHTML = `
         <div class="flex items-center gap-3 min-w-0 flex-1">
-          <div class="w-1.5 h-11 rounded-full shrink-0" style="background-color: ${item.color || '#3b82f6'}"></div>
+          <div class="w-1.5 self-stretch min-h-[38px] my-0.5 rounded-full shrink-0" style="background-color: ${item.color || '#3b82f6'}"></div>
           <div class="min-w-0 flex-1 pr-1">
             ${this.formatStockNameHtml(item.name)}
           </div>
@@ -213,14 +215,14 @@ window.DashboardUI = {
     const rateNum = parseFloat(rateVal);
     const changeEl = document.getElementById('modalChangeRate');
     if (changeEl) {
-      if (rateNum > 0) {
+      if (rateNum > 0 || (diffAmt && diffAmt > 0)) {
         changeEl.className = "text-base font-bold text-red-600 tabular-nums";
-        const amtStr = diffAmt ? ` (+${window.DashboardState.formatNumber(diffAmt)}원)` : '';
-        changeEl.innerText = `▲ +${rateNum.toFixed(2)}%${amtStr}`;
-      } else if (rateNum < 0) {
+        const amtStr = diffAmt ? ` (+${window.DashboardState.formatNumber(Math.abs(diffAmt))}원)` : '';
+        changeEl.innerText = `+${Math.abs(rateNum).toFixed(2)}%${amtStr}`;
+      } else if (rateNum < 0 || (diffAmt && diffAmt < 0)) {
         changeEl.className = "text-base font-bold text-blue-600 tabular-nums";
-        const amtStr = diffAmt ? ` (${window.DashboardState.formatNumber(diffAmt)}원)` : '';
-        changeEl.innerText = `▼ ${rateNum.toFixed(2)}%${amtStr}`;
+        const amtStr = diffAmt ? ` (-${window.DashboardState.formatNumber(Math.abs(diffAmt))}원)` : '';
+        changeEl.innerText = `-${Math.abs(rateNum).toFixed(2)}%${amtStr}`;
       } else {
         changeEl.className = "text-base font-bold text-slate-500 tabular-nums";
         changeEl.innerText = `0.00% (0원)`;
