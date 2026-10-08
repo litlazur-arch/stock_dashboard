@@ -13,12 +13,12 @@ body, button, input, select, textarea {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* 3. 네이버 증권 / 핀테크 스타일 슬림 숫자 (DIN / Pretendard 타이트 자간) */
+/* 3. 네이버 증권 / 핀테크 스타일 슬림 숫자 (Roboto Condensed + Pretendard Fallback) */
 .tabular-nums, .font-numeric, .font-mono {
-  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;
+  font-family: "Roboto Condensed", "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;
   font-feature-settings: "tnum" 1;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.035em !important; /* 좁고 쫀쫀한 자간 */
+  letter-spacing: -0.03em !important; /* 슬림하고 균형잡힌 숫자 자간 */
 }
 
 /* 모바일 가로 탭 스크롤바 숨김 */
