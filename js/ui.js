@@ -42,6 +42,28 @@ window.DashboardUI = {
   },
 
   /**
+   * 종목명 포맷팅: 운영사 브랜드(Tiger, Kodex, Ace, Sol 등)가 있는 경우 1행 분리 및 줄바꿈 지원 (18px)
+   */
+  formatStockNameHtml(name) {
+    if (!name) return '';
+    const norm = name.trim();
+    const brands = ['TIGER', 'Tiger', 'KODEX', 'Kodex', 'ACE', 'Ace', 'SOL', 'Sol', 'KBSTAR', 'Kbstar', 'ARIRANG', 'HANARO', 'PLUS', 'KOSEF', 'TIMEFOLIO', 'RISE'];
+    
+    for (const b of brands) {
+      if (norm.startsWith(b)) {
+        const rest = norm.slice(b.length).trim();
+        if (rest) {
+          return `
+            <div class="text-xs font-semibold text-slate-400 tracking-tight leading-none mb-1">${b}</div>
+            <div class="text-lg font-bold text-slate-900 tracking-tight leading-snug break-keep">${rest}</div>
+          `;
+        }
+      }
+    }
+    return `<div class="text-lg font-bold text-slate-900 tracking-tight leading-snug break-keep">${norm}</div>`;
+  },
+
+  /**
    * 보유 종목 카드 리스트를 렌더링합니다.
    */
   renderHoldingsList(holdings, totalAsset, containerId) {
@@ -105,49 +127,61 @@ window.DashboardUI = {
       const card = document.createElement('div');
       card.id = 'stock-card-' + (item.account ? (item.account + '-') : '') + item.code;
       card.setAttribute('data-stock-code', item.code);
-      card.className = "p-2.5 sm:p-3 bg-white border border-slate-200/90 rounded-xl flex items-center justify-between hover:border-blue-400 hover:shadow-xs transition-all duration-300 shadow-2xs cursor-pointer active:scale-[0.99]";
+      card.className = "p-3 bg-white border border-slate-200/90 rounded-xl flex items-center justify-between hover:border-blue-400 hover:shadow-xs transition-all duration-300 shadow-2xs cursor-pointer active:scale-[0.99]";
       card.onclick = () => this.openStockModal(item, totalAsset);
       
-      // 3. 전일 대비 상승률 표시 (14px: text-sm)
-      let changeHtml = '';
+      // 전일 대비 증감 계산 (금액 & 비율)
+      let rateNum = 0;
+      let diffAmtNum = 0;
+
       if (item.changeRate !== undefined && item.changeRate !== null) {
-        const rate = parseFloat(item.changeRate);
-        if (rate > 0) {
-          changeHtml = `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight">▲ +${rate.toFixed(2)}%</span>`;
-        } else if (rate < 0) {
-          changeHtml = `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight">▼ ${rate.toFixed(2)}%</span>`;
-        } else {
-          changeHtml = `<span class="text-sm font-medium text-slate-500 tabular-nums tracking-tight">0.00%</span>`;
-        }
+        rateNum = parseFloat(item.changeRate) || 0;
+      }
+      if (item.changeAmount !== undefined && item.changeAmount !== null && item.changeAmount !== 0) {
+        diffAmtNum = Math.round(item.changeAmount);
+      } else if (item.basePrice && item.price) {
+        diffAmtNum = Math.round(item.price - item.basePrice);
+      } else if (rateNum !== 0 && item.price) {
+        diffAmtNum = Math.round(item.price * (rateNum / 100));
+      }
+
+      let diffAmtHtml = '';
+      let diffRateHtml = '';
+
+      if (rateNum > 0 || diffAmtNum > 0) {
+        const amtStr = diffAmtNum > 0 ? `+${window.DashboardState.formatNumber(diffAmtNum)}원` : `+${window.DashboardState.formatNumber(Math.round(item.price * rateNum / 100))}원`;
+        diffAmtHtml = `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight">▲ ${amtStr}</span>`;
+        diffRateHtml = `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight">▲ +${rateNum.toFixed(2)}%</span>`;
+      } else if (rateNum < 0 || diffAmtNum < 0) {
+        const amtStr = diffAmtNum < 0 ? `${window.DashboardState.formatNumber(diffAmtNum)}원` : `${window.DashboardState.formatNumber(Math.round(item.price * rateNum / 100))}원`;
+        diffAmtHtml = `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight">▼ ${amtStr}</span>`;
+        diffRateHtml = `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight">▼ ${rateNum.toFixed(2)}%</span>`;
       } else {
-        changeHtml = `<span class="text-sm text-slate-400 tabular-nums tracking-tight">- %</span>`;
+        diffAmtHtml = `<span class="text-sm font-medium text-slate-500 tabular-nums tracking-tight">0원</span>`;
+        diffRateHtml = `<span class="text-sm font-medium text-slate-500 tabular-nums tracking-tight">0.00%</span>`;
       }
 
       card.innerHTML = `
-        <div class="flex items-center gap-2.5 min-w-0">
-          <div class="w-1.5 h-10 rounded-full shrink-0" style="background-color: ${item.color || '#3b82f6'}"></div>
-          <div class="min-w-0">
-            <!-- 종목명 (16px: text-base) -->
-            <div class="text-base font-bold text-slate-900 truncate tracking-tight">
-              ${item.name}
-            </div>
-            <!-- 수량 & 평가액 (12px: text-xs) -->
-            <div class="flex items-center text-xs text-slate-500 mt-1 whitespace-nowrap">
-              <span class="w-[34px] sm:w-[40px] text-right tabular-nums tracking-tight font-semibold text-slate-800 shrink-0">${window.DashboardState.formatNumber(item.qty)}</span>
-              <span class="text-slate-400 shrink-0 ml-0.5">주</span>
-              <span class="w-[52px] sm:w-[58px] text-right tabular-nums tracking-tight font-semibold text-slate-800 shrink-0 ml-3 sm:ml-4">${window.DashboardState.formatManWonNum(item.total)}</span>
-              <span class="text-slate-400 shrink-0 ml-0.5">만원</span>
-            </div>
+        <div class="flex items-center gap-3 min-w-0 flex-1">
+          <div class="w-1.5 h-11 rounded-full shrink-0" style="background-color: ${item.color || '#3b82f6'}"></div>
+          <div class="min-w-0 flex-1 pr-1">
+            ${this.formatStockNameHtml(item.name)}
           </div>
         </div>
         
-        <!-- 우측: 현재가 (16px: text-base) & 전일 대비 상승률 (14px: text-sm) -->
+        <!-- 우측: 현재가 (18px: text-lg) & 증감 금액 (14px: text-sm) & 증감률 (14px: text-sm) -->
         <div class="text-right flex flex-col items-end justify-center shrink-0 ml-2">
-          <div class="text-base font-bold text-slate-900 tabular-nums tracking-tight">
+          <!-- 1행: 현재가 (18px) -->
+          <div class="text-lg font-bold text-slate-900 tabular-nums tracking-tight">
             ${window.DashboardState.formatNumber(item.price)}원
           </div>
+          <!-- 2행: 전일 대비 증감 금액 (14px) -->
           <div class="mt-0.5">
-            ${changeHtml}
+            ${diffAmtHtml}
+          </div>
+          <!-- 3행: 전일 대비 증감 비율 (14px) -->
+          <div class="mt-0.5">
+            ${diffRateHtml}
           </div>
         </div>
       `;

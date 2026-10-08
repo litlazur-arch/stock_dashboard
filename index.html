@@ -73,17 +73,22 @@
           <span class="font-semibold text-blue-600 tracking-tight" id="userTitleLabel">포트폴리오 Ⓙ</span>
           <span class="text-slate-500 font-medium">총 평가 자산</span>
         </div>
-        <!-- 2행: 메인 타이틀 및 평가 자산 금액 (24px, items-baseline 밑선 일치) -->
-        <div class="flex items-baseline justify-between mt-1">
+        <!-- 2행: 메인 타이틀 및 평가 자산 금액, 증감액, 증감률 -->
+        <div class="flex items-start justify-between mt-1.5">
           <h1 class="text-2xl font-bold text-slate-900 tracking-tight" id="currentAccountTitle">
             위탁
           </h1>
-          <div class="text-right">
+          <div class="text-right flex flex-col items-end">
+            <!-- 1행: 자산금액 (24px) -->
             <div class="text-2xl font-bold text-slate-900 tracking-tight tabular-nums" id="headerTotalAsset">
               - 원
             </div>
-            <!-- 3행: 전일 대비 증감액 (16px, 원 단위) -->
+            <!-- 2행: 전일 대비 증감 금액 (16px) -->
             <div class="text-base font-bold tabular-nums mt-0.5" id="headerTotalAssetDiff">
+              -
+            </div>
+            <!-- 3행: 전일 대비 증감 비율 (14px) -->
+            <div class="text-sm font-semibold tabular-nums mt-0.5" id="headerTotalAssetDiffRate">
               -
             </div>
           </div>

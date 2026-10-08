@@ -179,9 +179,14 @@ window.DashboardApp = {
       }
     });
 
+    const roundedDiff = Math.round(totalDayDiff);
+    const prevTotalAsset = currentTotalAsset - roundedDiff;
+    const diffRatePct = prevTotalAsset > 0 ? ((roundedDiff / prevTotalAsset) * 100) : 0;
+
     const diffEl = document.getElementById('headerTotalAssetDiff');
+    const rateEl = document.getElementById('headerTotalAssetDiffRate');
+
     if (diffEl) {
-      const roundedDiff = Math.round(totalDayDiff);
       if (roundedDiff > 0) {
         diffEl.className = "text-base font-bold tabular-nums text-red-600 mt-0.5";
         diffEl.innerText = `▲ +${window.DashboardState.formatNumber(roundedDiff)}원`;
@@ -191,6 +196,19 @@ window.DashboardApp = {
       } else {
         diffEl.className = "text-base font-bold tabular-nums text-slate-500 mt-0.5";
         diffEl.innerText = `0원`;
+      }
+    }
+
+    if (rateEl) {
+      if (diffRatePct > 0) {
+        rateEl.className = "text-sm font-semibold tabular-nums text-red-600 mt-0.5";
+        rateEl.innerText = `▲ +${diffRatePct.toFixed(2)}%`;
+      } else if (diffRatePct < 0) {
+        rateEl.className = "text-sm font-semibold tabular-nums text-blue-600 mt-0.5";
+        rateEl.innerText = `▼ ${diffRatePct.toFixed(2)}%`;
+      } else {
+        rateEl.className = "text-sm font-semibold tabular-nums text-slate-500 mt-0.5";
+        rateEl.innerText = `0.00%`;
       }
     }
 
