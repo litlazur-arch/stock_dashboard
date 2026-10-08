@@ -151,16 +151,16 @@ window.DashboardUI = {
       if (rateNum > 0 || diffAmtNum > 0) {
         const absAmt = Math.abs(diffAmtNum || Math.round(item.price * rateNum / 100));
         const absRate = Math.abs(rateNum);
-        diffAmtHtml = `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight">+${window.DashboardState.formatNumber(absAmt)}원</span>`;
-        diffRateHtml = `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight">+${absRate.toFixed(2)}%</span>`;
+        diffAmtHtml = `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight leading-tight">+${window.DashboardState.formatNumber(absAmt)}원</span>`;
+        diffRateHtml = `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight leading-tight">+${absRate.toFixed(2)}%</span>`;
       } else if (rateNum < 0 || diffAmtNum < 0) {
         const absAmt = Math.abs(diffAmtNum || Math.round(item.price * rateNum / 100));
         const absRate = Math.abs(rateNum);
-        diffAmtHtml = `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight">-${window.DashboardState.formatNumber(absAmt)}원</span>`;
-        diffRateHtml = `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight">-${absRate.toFixed(2)}%</span>`;
+        diffAmtHtml = `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight leading-tight">-${window.DashboardState.formatNumber(absAmt)}원</span>`;
+        diffRateHtml = `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight leading-tight">-${absRate.toFixed(2)}%</span>`;
       } else {
-        diffAmtHtml = `<span class="text-sm font-medium text-slate-500 tabular-nums tracking-tight">0원</span>`;
-        diffRateHtml = `<span class="text-sm font-medium text-slate-500 tabular-nums tracking-tight">0.00%</span>`;
+        diffAmtHtml = `<span class="text-sm font-medium text-slate-500 tabular-nums tracking-tight leading-tight">0원</span>`;
+        diffRateHtml = `<span class="text-sm font-medium text-slate-500 tabular-nums tracking-tight leading-tight">0.00%</span>`;
       }
 
       card.innerHTML = `
@@ -174,15 +174,15 @@ window.DashboardUI = {
         <!-- 우측: 현재가 (18px: text-lg) & 증감 금액 (14px: text-sm) & 증감률 (14px: text-sm) -->
         <div class="text-right flex flex-col items-end justify-center shrink-0 ml-2">
           <!-- 1행: 현재가 (18px) -->
-          <div class="text-lg font-bold text-slate-900 tabular-nums tracking-tight">
+          <div class="text-lg font-bold text-slate-900 tabular-nums tracking-tight leading-tight">
             ${window.DashboardState.formatNumber(item.price)}원
           </div>
           <!-- 2행: 전일 대비 증감 금액 (14px) -->
-          <div class="mt-0.5">
+          <div class="mt-1 leading-tight">
             ${diffAmtHtml}
           </div>
           <!-- 3행: 전일 대비 증감 비율 (14px) -->
-          <div class="mt-0.5">
+          <div class="mt-0 leading-tight">
             ${diffRateHtml}
           </div>
         </div>

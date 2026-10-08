@@ -188,26 +188,26 @@ window.DashboardApp = {
 
     if (diffEl) {
       if (roundedDiff > 0) {
-        diffEl.className = "text-base font-bold tabular-nums text-red-600 mt-0.5";
+        diffEl.className = "text-base font-bold tabular-nums text-red-600 mt-1 leading-tight";
         diffEl.innerText = `+${window.DashboardState.formatNumber(Math.abs(roundedDiff))}원`;
       } else if (roundedDiff < 0) {
-        diffEl.className = "text-base font-bold tabular-nums text-blue-600 mt-0.5";
+        diffEl.className = "text-base font-bold tabular-nums text-blue-600 mt-1 leading-tight";
         diffEl.innerText = `-${window.DashboardState.formatNumber(Math.abs(roundedDiff))}원`;
       } else {
-        diffEl.className = "text-base font-bold tabular-nums text-slate-500 mt-0.5";
+        diffEl.className = "text-base font-bold tabular-nums text-slate-500 mt-1 leading-tight";
         diffEl.innerText = `0원`;
       }
     }
 
     if (rateEl) {
       if (diffRatePct > 0) {
-        rateEl.className = "text-sm font-semibold tabular-nums text-red-600 mt-0.5";
+        rateEl.className = "text-sm font-semibold tabular-nums text-red-600 mt-0 leading-tight";
         rateEl.innerText = `+${Math.abs(diffRatePct).toFixed(2)}%`;
       } else if (diffRatePct < 0) {
-        rateEl.className = "text-sm font-semibold tabular-nums text-blue-600 mt-0.5";
+        rateEl.className = "text-sm font-semibold tabular-nums text-blue-600 mt-0 leading-tight";
         rateEl.innerText = `-${Math.abs(diffRatePct).toFixed(2)}%`;
       } else {
-        rateEl.className = "text-sm font-semibold tabular-nums text-slate-500 mt-0.5";
+        rateEl.className = "text-sm font-semibold tabular-nums text-slate-500 mt-0 leading-tight";
         rateEl.innerText = `0.00%`;
       }
     }
