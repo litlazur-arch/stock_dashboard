@@ -216,9 +216,12 @@
   </div>
 
   <!-- 종목 상세 인앱 바텀시트 모달 (In-App Bottom Sheet Modal) -->
-  <div id="stockModalBackdrop" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 transition-opacity duration-300 opacity-0 pointer-events-none flex items-end sm:items-center justify-center p-0 sm:p-4">
+  <div id="stockModalBackdrop" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 transition-opacity duration-300 opacity-0 pointer-events-none flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="if(event.target === this) window.DashboardUI.closeStockModal()">
     <div id="stockModalCard" class="w-full max-w-[480px] bg-white border border-slate-200 rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 shadow-2xl transition-all duration-300 transform translate-y-full sm:translate-y-4 sm:scale-95 space-y-4 max-h-[92vh] overflow-y-auto">
       
+      <!-- 상단 드래그 핸들 (모바일 바텀시트 UX 표준: 탭 또는 아래로 쓸어내려 닫기) -->
+      <div class="w-12 h-1.5 bg-slate-300 hover:bg-slate-400 rounded-full mx-auto -mt-2 mb-2 cursor-pointer transition-colors" onclick="window.DashboardUI.closeStockModal()" title="닫기"></div>
+
       <!-- 1. 상단 타이틀 & 계좌 배지 & 닫기 버튼 -->
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3 min-w-0 flex-1 pr-2">
@@ -312,11 +315,11 @@
   </div>
 
   <!-- 3. 모듈화된 자바스크립트 로드 순서 (캐시 방지 파라미터 적용) -->
-  <script src="./js/api.js?v=20261009_06"></script>
-  <script src="./js/state.js?v=20261009_06"></script>
-  <script src="./js/charts.js?v=20261009_06"></script>
-  <script src="./js/ui.js?v=20261009_06"></script>
-  <script src="./js/app.js?v=20261009_06"></script>
+  <script src="./js/api.js?v=20261009_07"></script>
+  <script src="./js/state.js?v=20261009_07"></script>
+  <script src="./js/charts.js?v=20261009_07"></script>
+  <script src="./js/ui.js?v=20261009_07"></script>
+  <script src="./js/app.js?v=20261009_07"></script>
 </body>
 
 </html>

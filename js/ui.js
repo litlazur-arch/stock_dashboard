@@ -64,13 +64,13 @@ window.DashboardUI = {
   },
 
   /**
-   * 종목별 아이콘 이미지 내부 태그를 생성합니다. (토스증권 CDN 1순위, 네이버증권 CDN 2순위, 텍스트 이니셜 3순위 폴백)
+   * 종목별 아이콘 이미지 내부 태그를 생성합니다. (네이버 공식 원형 SVG & 토스 고해상도 PNG 하이브리드)
    */
   getStockIconInnerHtml(code, name) {
     const normCode = String(code || '').trim();
     const normName = String(name || '').trim();
     
-    // 우선주 -> 본주 매핑 (토스 CDN 호환성)
+    // 우선주 -> 본주 매핑 (토스/네이버 CDN 호환성)
     const baseCodeMap = {
       '005935': '005930', // 삼성전자우 -> 삼성전자
       '005385': '005380', // 현대차우
@@ -81,29 +81,33 @@ window.DashboardUI = {
     };
     const targetCode = baseCodeMap[normCode] || normCode;
     
-    // 1순위: 토스증권 고화질 투명 PNG (국내주식 및 ETF 100% 매칭)
-    const tossUrl = `https://static.toss.im/png-icons/securities/icn-sec-fill-${targetCode}.png`;
-    
-    // 2순위: 네이버 증권 CDN (ETF 브랜드 또는 개별 종목)
-    let naverUrl = '';
+    // ETF 브랜드 감지
     const brands = ['TIGER', 'KODEX', 'ACE', 'SOL', 'PLUS', 'RISE'];
     const matchedBrand = brands.find(b => normName.toUpperCase().includes(b));
+    
+    let primaryUrl = '';
+    let fallbackUrl = '';
+    
     if (matchedBrand) {
-      naverUrl = `https://ssl.pstatic.net/imgstock/fn/real/logo/etf/StockKRETF${matchedBrand}.svg`;
-    } else if (targetCode && targetCode.length === 6) {
-      naverUrl = `https://ssl.pstatic.net/imgstock/fn/real/logo/stock/Stock${targetCode}.svg`;
+      // ETF: 토스 고화질 PNG (ETF별 심볼 100% 매칭) 우선 -> 네이버 브랜드 SVG
+      primaryUrl = `https://static.toss.im/png-icons/securities/icn-sec-fill-${targetCode}.png`;
+      fallbackUrl = `https://ssl.pstatic.net/imgstock/fn/real/logo/etf/StockKRETF${matchedBrand}.svg`;
+    } else {
+      // 일반 주식: 네이버 공식 원형 SVG (<circle cx="20" cy="20" r="20"> 완전한 원형) 우선 -> 토스 PNG
+      primaryUrl = `https://ssl.pstatic.net/imgstock/fn/real/logo/stock/Stock${targetCode}.svg`;
+      fallbackUrl = `https://static.toss.im/png-icons/securities/icn-sec-fill-${targetCode}.png`;
     }
 
     const initialText = normName.slice(0, 2);
 
     return `
-      <img src="${tossUrl}" alt="${normName}"
-        class="w-full h-full object-contain p-0.5"
+      <img src="${primaryUrl}" alt="${normName}"
+        class="w-full h-full object-cover rounded-full"
         loading="lazy"
         onerror="
-          if (this.dataset.triedNaver !== '1' && '${naverUrl}') {
-            this.dataset.triedNaver = '1';
-            this.src = '${naverUrl}';
+          if (this.dataset.triedFallback !== '1' && '${fallbackUrl}') {
+            this.dataset.triedFallback = '1';
+            this.src = '${fallbackUrl}';
           } else {
             this.style.display = 'none';
             if (this.nextElementSibling) this.nextElementSibling.style.display = 'flex';
@@ -121,7 +125,7 @@ window.DashboardUI = {
    */
   getStockIconHtml(code, name, sizeClass = "w-10 h-10") {
     return `
-      <div class="relative ${sizeClass} rounded-full bg-slate-50 border border-slate-200/90 shadow-2xs shrink-0 flex items-center justify-center overflow-hidden select-none">
+      <div class="relative ${sizeClass} rounded-full bg-slate-100 border border-slate-200/90 shadow-2xs shrink-0 flex items-center justify-center overflow-hidden select-none">
         ${this.getStockIconInnerHtml(code, name)}
       </div>
     `;
@@ -419,11 +423,76 @@ window.DashboardUI = {
 
     window.DashboardCharts.renderStockSparkline(sparklinePrices, sparklineDates, 'modalSparklineSvg', 'modalSparklineDiff');
 
+    this.initModalEvents();
+
     // 바텀시트 활성화 애니메이션
+    card.style.transform = '';
     backdrop.classList.remove('opacity-0', 'pointer-events-none');
     backdrop.classList.add('opacity-100');
     card.classList.remove('translate-y-full', 'sm:scale-95');
     card.classList.add('translate-y-0', 'sm:scale-100');
+  },
+
+  /**
+   * 모달 인터랙션 이벤트(배경 클릭, ESC 키, 아래로 스와이프 제스처) 초기화
+   */
+  initModalEvents() {
+    if (this._modalEventsInitialized) return;
+    this._modalEventsInitialized = true;
+
+    const backdrop = document.getElementById('stockModalBackdrop');
+    const card = document.getElementById('stockModalCard');
+
+    // 1. 배경 딤드 레이어 터치/클릭 시 닫기
+    if (backdrop) {
+      backdrop.addEventListener('click', (e) => {
+        if (e.target === backdrop) {
+          this.closeStockModal();
+        }
+      });
+    }
+
+    // 2. 키보드 ESC 키 누름 시 닫기 (데스크톱/태블릿 접근성)
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        this.closeStockModal();
+      }
+    });
+
+    // 3. 모바일 아래로 쓸어내리기(Swipe-down) 터치 제스처
+    if (card) {
+      let touchStartY = 0;
+      let touchCurrentY = 0;
+
+      card.addEventListener('touchstart', (e) => {
+        if (card.scrollTop <= 0) {
+          touchStartY = e.touches[0].clientY;
+          touchCurrentY = touchStartY;
+        } else {
+          touchStartY = 0;
+        }
+      }, { passive: true });
+
+      card.addEventListener('touchmove', (e) => {
+        if (!touchStartY) return;
+        touchCurrentY = e.touches[0].clientY;
+        const diff = touchCurrentY - touchStartY;
+        if (diff > 0) {
+          card.style.transform = `translateY(${diff}px)`;
+        }
+      }, { passive: true });
+
+      card.addEventListener('touchend', () => {
+        if (!touchStartY) return;
+        const diff = touchCurrentY - touchStartY;
+        if (diff > 75) {
+          this.closeStockModal();
+        } else {
+          card.style.transform = '';
+        }
+        touchStartY = 0;
+      }, { passive: true });
+    }
   },
 
   /**
@@ -438,6 +507,7 @@ window.DashboardUI = {
     backdrop.classList.remove('opacity-100');
     card.classList.add('translate-y-full', 'sm:scale-95');
     card.classList.remove('translate-y-0', 'sm:scale-100');
+    card.style.transform = '';
   },
 
   /**
