@@ -282,7 +282,10 @@ window.DashboardUI = {
     const card = document.getElementById('stockModalCard');
     if (!backdrop || !card) return;
 
-    document.getElementById('modalStockName').innerText = stock.name;
+    const nameEl = document.getElementById('modalStockName');
+    if (nameEl) {
+      nameEl.innerHTML = this.formatStockNameHtml(stock.name);
+    }
     document.getElementById('modalStockCode').innerText = stock.code;
     const dot = document.getElementById('modalColorDot');
     if (dot) dot.style.backgroundColor = stock.color || '#3b82f6';
@@ -319,20 +322,22 @@ window.DashboardUI = {
       diffAmt = Math.abs(diffAmt);
     }
 
-    const changeEl = document.getElementById('modalChangeRate');
-    if (changeEl) {
-      if (rateNum > 0 || (rateNum === 0 && diffAmt > 0)) {
-        changeEl.className = "text-base font-bold text-red-600 tabular-nums";
-        const amtStr = diffAmt ? ` (+${window.DashboardState.formatNumber(Math.abs(diffAmt))}원)` : '';
-        changeEl.innerText = `+${Math.abs(rateNum).toFixed(2)}%${amtStr}`;
-      } else if (rateNum < 0 || (rateNum === 0 && diffAmt < 0)) {
-        changeEl.className = "text-base font-bold text-blue-600 tabular-nums";
-        const amtStr = diffAmt ? ` (-${window.DashboardState.formatNumber(Math.abs(diffAmt))}원)` : '';
-        changeEl.innerText = `-${Math.abs(rateNum).toFixed(2)}%${amtStr}`;
-      } else {
-        changeEl.className = "text-base font-bold text-slate-500 tabular-nums";
-        changeEl.innerText = `0.00% (0원)`;
-      }
+    const diffAmtEl = document.getElementById('modalDiffAmt');
+    const diffRateEl = document.getElementById('modalDiffRate');
+
+    if (rateNum > 0 || (rateNum === 0 && diffAmt > 0)) {
+      const absAmt = Math.abs(diffAmt);
+      const absRate = Math.abs(rateNum);
+      if (diffAmtEl) diffAmtEl.innerHTML = `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight leading-tight">+${window.DashboardState.formatNumber(absAmt)}원</span>`;
+      if (diffRateEl) diffRateEl.innerHTML = `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight leading-tight">+${absRate.toFixed(2)}%</span>`;
+    } else if (rateNum < 0 || (rateNum === 0 && diffAmt < 0)) {
+      const absAmt = Math.abs(diffAmt);
+      const absRate = Math.abs(rateNum);
+      if (diffAmtEl) diffAmtEl.innerHTML = `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight leading-tight">-${window.DashboardState.formatNumber(absAmt)}원</span>`;
+      if (diffRateEl) diffRateEl.innerHTML = `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight leading-tight">-${absRate.toFixed(2)}%</span>`;
+    } else {
+      if (diffAmtEl) diffAmtEl.innerHTML = `<span class="text-sm font-medium text-slate-500 tabular-nums tracking-tight leading-tight">0원</span>`;
+      if (diffRateEl) diffRateEl.innerHTML = `<span class="text-sm font-medium text-slate-500 tabular-nums tracking-tight leading-tight">0.00%</span>`;
     }
 
     // 계좌 배지
