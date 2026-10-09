@@ -294,52 +294,6 @@ window.DashboardUI = {
       iconContainer.innerHTML = this.getStockIconInnerHtml(stock.code, stock.name);
     }
     
-    document.getElementById('modalPrice').innerText = window.DashboardState.formatNumber(stock.price) + '원';
-
-    // 전일 대비 등락률 및 등락액
-    let rateNum = 0;
-    let diffAmt = 0;
-
-    if (stock.basePrice && stock.price) {
-      diffAmt = Math.round(stock.price - stock.basePrice);
-      if (stock.basePrice > 0) {
-        rateNum = ((stock.price - stock.basePrice) / stock.basePrice) * 100;
-      }
-    }
-    if (stock.changeRate !== undefined && stock.changeRate !== null) {
-      const parsed = parseFloat(stock.changeRate);
-      if (!isNaN(parsed)) rateNum = parsed;
-    }
-    if (stock.changeAmount !== undefined && stock.changeAmount !== null && stock.changeAmount !== 0) {
-      diffAmt = Math.round(stock.changeAmount);
-    } else if (diffAmt === 0 && rateNum !== 0 && stock.price) {
-      diffAmt = Math.round(stock.price * (rateNum / (100 + rateNum)));
-    }
-
-    if (rateNum < 0 && diffAmt > 0) {
-      diffAmt = -Math.abs(diffAmt);
-    } else if (rateNum > 0 && diffAmt < 0) {
-      diffAmt = Math.abs(diffAmt);
-    }
-
-    const diffAmtEl = document.getElementById('modalDiffAmt');
-    const diffRateEl = document.getElementById('modalDiffRate');
-
-    if (rateNum > 0 || (rateNum === 0 && diffAmt > 0)) {
-      const absAmt = Math.abs(diffAmt);
-      const absRate = Math.abs(rateNum);
-      if (diffAmtEl) diffAmtEl.innerHTML = `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight leading-tight">+${window.DashboardState.formatNumber(absAmt)}원</span>`;
-      if (diffRateEl) diffRateEl.innerHTML = `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight leading-tight">+${absRate.toFixed(2)}%</span>`;
-    } else if (rateNum < 0 || (rateNum === 0 && diffAmt < 0)) {
-      const absAmt = Math.abs(diffAmt);
-      const absRate = Math.abs(rateNum);
-      if (diffAmtEl) diffAmtEl.innerHTML = `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight leading-tight">-${window.DashboardState.formatNumber(absAmt)}원</span>`;
-      if (diffRateEl) diffRateEl.innerHTML = `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight leading-tight">-${absRate.toFixed(2)}%</span>`;
-    } else {
-      if (diffAmtEl) diffAmtEl.innerHTML = `<span class="text-sm font-medium text-slate-500 tabular-nums tracking-tight leading-tight">0원</span>`;
-      if (diffRateEl) diffRateEl.innerHTML = `<span class="text-sm font-medium text-slate-500 tabular-nums tracking-tight leading-tight">0.00%</span>`;
-    }
-
     // 계좌 배지
     const badgeEl = document.getElementById('modalAccountBadge');
     if (badgeEl) {
@@ -354,10 +308,11 @@ window.DashboardUI = {
     const ratio = totalAccountAsset > 0 ? ((stock.total / totalAccountAsset) * 100).toFixed(1) : '0.0';
     document.getElementById('modalRatio').innerText = ratio + '%';
 
-    // 매수 금액, 매수 단가 및 누적 평가 손익
+    // 매수 금액, 매수 단가 및 현재가/수익률 (2줄)
     const buyTotalEl = document.getElementById('modalBuyTotal');
     const buyPriceEl = document.getElementById('modalBuyPrice');
-    const profitEl = document.getElementById('modalProfit');
+    const priceEl = document.getElementById('modalPrice');
+    const profitRateEl = document.getElementById('modalProfitRate');
 
     const buyTotal = stock.buyTotal || (stock.buyPrice && stock.qty ? Math.round(stock.buyPrice * stock.qty) : 0);
     const buyPrice = stock.buyPrice || (buyTotal > 0 && stock.qty ? Math.round(buyTotal / stock.qty) : 0);
@@ -369,24 +324,29 @@ window.DashboardUI = {
       buyPriceEl.innerText = buyPrice > 0 ? (window.DashboardState.formatNumber(buyPrice) + '원') : '-';
     }
 
-    if (profitEl) {
+    // 현재가 (1행)
+    if (priceEl) {
+      priceEl.innerText = stock.price > 0 ? (window.DashboardState.formatNumber(stock.price) + '원') : '-원';
+    }
+
+    // 매수단가 대비 증감비율 (2행)
+    if (profitRateEl) {
       if (buyTotal > 0 && stock.total > 0) {
         const profitAmt = Math.round(stock.total - buyTotal);
         const profitPct = Math.abs((profitAmt / buyTotal) * 100).toFixed(2);
-        const manWonAmt = window.DashboardState.formatManWonNum(Math.abs(profitAmt));
         if (profitAmt > 0) {
-          profitEl.className = "text-base sm:text-lg font-bold text-red-600 tabular-nums mt-0.5 leading-tight";
-          profitEl.innerText = `+${manWonAmt}만원 +${profitPct}%`;
+          profitRateEl.className = "text-xs sm:text-sm font-bold text-red-600 tabular-nums mt-0.5 leading-tight";
+          profitRateEl.innerText = `+${profitPct}%`;
         } else if (profitAmt < 0) {
-          profitEl.className = "text-base sm:text-lg font-bold text-blue-600 tabular-nums mt-0.5 leading-tight";
-          profitEl.innerText = `-${manWonAmt}만원 -${profitPct}%`;
+          profitRateEl.className = "text-xs sm:text-sm font-bold text-blue-600 tabular-nums mt-0.5 leading-tight";
+          profitRateEl.innerText = `-${profitPct}%`;
         } else {
-          profitEl.className = "text-base sm:text-lg font-bold text-slate-500 tabular-nums mt-0.5 leading-tight";
-          profitEl.innerText = `0만원 0.00%`;
+          profitRateEl.className = "text-xs sm:text-sm font-bold text-slate-500 tabular-nums mt-0.5 leading-tight";
+          profitRateEl.innerText = `0.00%`;
         }
       } else {
-        profitEl.className = "text-base sm:text-lg font-bold text-slate-500 tabular-nums mt-0.5 leading-tight";
-        profitEl.innerText = `-`;
+        profitRateEl.className = "text-xs sm:text-sm font-bold text-slate-500 tabular-nums mt-0.5 leading-tight";
+        profitRateEl.innerText = `-`;
       }
     }
 

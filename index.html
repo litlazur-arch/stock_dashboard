@@ -219,44 +219,33 @@
   <div id="stockModalBackdrop" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 transition-opacity duration-300 opacity-0 pointer-events-none flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="if(event.target === this) window.DashboardUI.closeStockModal()">
     <div id="stockModalCard" class="w-full max-w-[480px] bg-white border border-slate-200 rounded-t-3xl sm:rounded-2xl p-4 sm:p-5 shadow-2xl transition-all duration-300 transform translate-y-full sm:translate-y-4 sm:scale-95 space-y-3.5 max-h-[92vh] overflow-y-auto">
       
-      <!-- 1. 최상단 네비게이션 헤더: 보유 계좌 배지 & 종목코드 & 닫기 버튼 -->
-      <div class="flex items-center justify-between pb-1.5 border-b border-slate-100">
-        <div class="flex items-center gap-2">
-          <span class="px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold bg-blue-50 text-blue-700 border border-blue-200/70" id="modalAccountBadge">위탁</span>
-          <span class="text-xs sm:text-sm text-slate-400 font-medium tabular-nums" id="modalStockCode">-</span>
-        </div>
-        <button onclick="window.DashboardUI.closeStockModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold flex items-center justify-center transition-colors shrink-0 text-sm" aria-label="닫기">
-          ✕
-        </button>
-      </div>
-
-      <!-- 2. 종목 요약 카드 (메인 화면 종목 카드와 100% 동일한 3줄 레이아웃) -->
-      <div class="p-3 bg-slate-50 border border-slate-200/90 rounded-xl flex items-center justify-between shadow-2xs">
-        <!-- 좌측: 원형 종목 아이콘 (40px) & 종목명 -->
+      <!-- 1. 일체형 종목 헤더 카드 (좌측: 아이콘, 종목명, 종목코드 / 우측: 계좌 배지, 닫기 버튼) -->
+      <div class="p-3 bg-slate-50 border border-slate-200/90 rounded-2xl flex items-center justify-between shadow-2xs gap-2.5">
+        <!-- 좌측: 원형 종목 아이콘 (40px) & 종목명(줄바꿈 가능) & 종목코드 (1행에 배치) -->
         <div class="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
           <div class="relative w-10 h-10 rounded-full bg-slate-100 border border-slate-200/90 shadow-2xs shrink-0 flex items-center justify-center overflow-hidden select-none" id="modalStockIcon">
             <div class="w-3.5 h-3.5 rounded-full" id="modalColorDot"></div>
           </div>
-          <div class="min-w-0 flex-1 pr-1 font-bold text-slate-900" id="modalStockName">
-            -
+          <div class="min-w-0 flex-1 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+            <span class="text-base sm:text-lg font-bold text-slate-900 tracking-tight leading-snug break-words" id="modalStockName">
+              -
+            </span>
+            <span class="text-xs sm:text-sm text-slate-400 font-medium tabular-nums shrink-0" id="modalStockCode">
+              -
+            </span>
           </div>
         </div>
-        
-        <!-- 우측: 1행 현재가(18px) | 2행 증감 금액(14px) | 3행 증감 비율(14px) -->
-        <div class="text-right flex flex-col items-end justify-center shrink-0 ml-2">
-          <div class="text-lg font-bold text-slate-900 tabular-nums tracking-tight leading-tight" id="modalPrice">
-            -원
-          </div>
-          <div class="mt-1 leading-tight" id="modalDiffAmt">
-            -
-          </div>
-          <div class="mt-0 leading-tight" id="modalDiffRate">
-            -
-          </div>
+
+        <!-- 우측: 계좌 배지 & 닫기 버튼 -->
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <span class="px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold bg-blue-50 text-blue-700 border border-blue-200/70" id="modalAccountBadge">위탁</span>
+          <button onclick="window.DashboardUI.closeStockModal()" class="w-8 h-8 rounded-full bg-white hover:bg-slate-200 border border-slate-200 text-slate-600 font-bold flex items-center justify-center transition-colors shrink-0 text-sm shadow-2xs" aria-label="닫기">
+            ✕
+          </button>
         </div>
       </div>
 
-      <!-- 3. 최근 20영업일 (1개월) 주가 추이 스파크라인 차트 -->
+      <!-- 2. 최근 20영업일 (1개월) 주가 추이 스파크라인 차트 -->
       <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3 sm:p-3.5 space-y-2">
         <div class="flex items-center justify-between">
           <span class="text-xs sm:text-sm font-bold text-slate-800">최근 1개월 주가 추이</span>
@@ -270,7 +259,7 @@
         </div>
       </div>
 
-      <!-- 4. 그룹화된 투자 현황 (그룹 A: 매수 원금 / 그룹 B: 평가 성과) -->
+      <!-- 3. 그룹화된 투자 현황 (그룹 A: 매수 원금 / 그룹 B: 평가 성과) -->
       <div class="space-y-2.5">
         
         <!-- 그룹 A: 매수 현황 (투자 원금) -->
@@ -280,39 +269,42 @@
             <span>매수 현황 (투자 원금)</span>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <div class="bg-white border border-slate-200/70 rounded-lg p-2.5 text-right">
-              <div class="text-xs sm:text-sm text-slate-500 font-medium">보유 수량</div>
-              <div class="text-base sm:text-lg font-bold text-slate-900 tabular-nums mt-0.5" id="modalQty">-주</div>
+            <div class="bg-white border border-slate-200/70 rounded-lg p-2.5 flex flex-col justify-between">
+              <div class="text-xs sm:text-sm text-slate-500 font-medium text-center w-full">보유 수량</div>
+              <div class="text-base sm:text-lg font-bold text-slate-900 tabular-nums mt-0.5 text-right w-full" id="modalQty">-주</div>
             </div>
-            <div class="bg-white border border-slate-200/70 rounded-lg p-2.5 text-right">
-              <div class="text-xs sm:text-sm text-slate-500 font-medium">매수 단가 (평균)</div>
-              <div class="text-base sm:text-lg font-bold text-slate-900 tabular-nums mt-0.5" id="modalBuyPrice">-원</div>
+            <div class="bg-white border border-slate-200/70 rounded-lg p-2.5 flex flex-col justify-between">
+              <div class="text-xs sm:text-sm text-slate-500 font-medium text-center w-full">매수 단가</div>
+              <div class="text-base sm:text-lg font-bold text-slate-900 tabular-nums mt-0.5 text-right w-full" id="modalBuyPrice">-원</div>
             </div>
-            <div class="bg-white border border-slate-200/70 rounded-lg p-2.5 text-right">
-              <div class="text-xs sm:text-sm text-slate-500 font-medium">매수 금액 (원금)</div>
-              <div class="text-base sm:text-lg font-bold text-slate-900 tabular-nums mt-0.5" id="modalBuyTotal">-만원</div>
+            <div class="bg-white border border-slate-200/70 rounded-lg p-2.5 flex flex-col justify-between">
+              <div class="text-xs sm:text-sm text-slate-500 font-medium text-center w-full">매수 금액</div>
+              <div class="text-base sm:text-lg font-bold text-slate-900 tabular-nums mt-0.5 text-right w-full" id="modalBuyTotal">-만원</div>
             </div>
           </div>
         </div>
 
-        <!-- 그룹 B: 평가 현황 (현재 성과) - 비중, 평가손익, 평가금액 순 -->
+        <!-- 그룹 B: 평가 현황 (현재 성과) - 계좌 내 비중, 현재가(2줄), 평가 금액 순 -->
         <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3">
           <div class="text-xs font-bold text-slate-600 mb-2 flex items-center gap-1.5">
             <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
             <span>평가 현황 (현재 성과)</span>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <div class="bg-white border border-slate-200/70 rounded-lg p-2.5 text-right">
-              <div class="text-xs sm:text-sm text-slate-500 font-medium">계좌 내 비중</div>
-              <div class="text-base sm:text-lg font-bold text-blue-600 tabular-nums mt-0.5" id="modalRatio">-%</div>
+            <div class="bg-white border border-slate-200/70 rounded-lg p-2.5 flex flex-col justify-between">
+              <div class="text-xs sm:text-sm text-slate-500 font-medium text-center w-full">계좌 내 비중</div>
+              <div class="text-base sm:text-lg font-bold text-blue-600 tabular-nums mt-0.5 text-right w-full" id="modalRatio">-%</div>
             </div>
-            <div class="bg-white border border-slate-200/70 rounded-lg p-2.5 text-right">
-              <div class="text-xs sm:text-sm text-slate-500 font-medium">누적 평가 손익</div>
-              <div class="text-base sm:text-lg font-bold tabular-nums mt-0.5 leading-tight" id="modalProfit">-</div>
+            <div class="bg-white border border-slate-200/70 rounded-lg p-2.5 flex flex-col justify-between">
+              <div class="text-xs sm:text-sm text-slate-500 font-medium text-center w-full">현재가</div>
+              <div class="text-right w-full mt-0.5">
+                <div class="text-base sm:text-lg font-bold text-slate-900 tabular-nums leading-tight" id="modalPrice">-원</div>
+                <div class="text-xs sm:text-sm font-bold tabular-nums mt-0.5 leading-tight" id="modalProfitRate">-</div>
+              </div>
             </div>
-            <div class="bg-white border border-slate-200/70 rounded-lg p-2.5 text-right">
-              <div class="text-xs sm:text-sm text-slate-500 font-medium">평가 금액</div>
-              <div class="text-base sm:text-lg font-bold text-slate-900 tabular-nums mt-0.5" id="modalTotal">-만원</div>
+            <div class="bg-white border border-slate-200/70 rounded-lg p-2.5 flex flex-col justify-between">
+              <div class="text-xs sm:text-sm text-slate-500 font-medium text-center w-full">평가 금액</div>
+              <div class="text-base sm:text-lg font-bold text-slate-900 tabular-nums mt-0.5 text-right w-full" id="modalTotal">-만원</div>
             </div>
           </div>
         </div>
@@ -333,11 +325,11 @@
   </div>
 
   <!-- 3. 모듈화된 자바스크립트 로드 순서 (캐시 방지 파라미터 적용) -->
-  <script src="./js/api.js?v=20261010_02"></script>
-  <script src="./js/state.js?v=20261010_02"></script>
-  <script src="./js/charts.js?v=20261010_02"></script>
-  <script src="./js/ui.js?v=20261010_02"></script>
-  <script src="./js/app.js?v=20261010_02"></script>
+  <script src="./js/api.js?v=20261010_03"></script>
+  <script src="./js/state.js?v=20261010_03"></script>
+  <script src="./js/charts.js?v=20261010_03"></script>
+  <script src="./js/ui.js?v=20261010_03"></script>
+  <script src="./js/app.js?v=20261010_03"></script>
 </body>
 
 </html>
