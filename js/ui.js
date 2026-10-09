@@ -64,6 +64,70 @@ window.DashboardUI = {
   },
 
   /**
+   * 종목별 아이콘 이미지 내부 태그를 생성합니다. (토스증권 CDN 1순위, 네이버증권 CDN 2순위, 텍스트 이니셜 3순위 폴백)
+   */
+  getStockIconInnerHtml(code, name) {
+    const normCode = String(code || '').trim();
+    const normName = String(name || '').trim();
+    
+    // 우선주 -> 본주 매핑 (토스 CDN 호환성)
+    const baseCodeMap = {
+      '005935': '005930', // 삼성전자우 -> 삼성전자
+      '005385': '005380', // 현대차우
+      '005387': '005380', // 현대차2우B
+      '005389': '005380', // 현대차3우B
+      '051915': '051910', // LG화학우
+      '003555': '003550', // LG우
+    };
+    const targetCode = baseCodeMap[normCode] || normCode;
+    
+    // 1순위: 토스증권 고화질 투명 PNG (국내주식 및 ETF 100% 매칭)
+    const tossUrl = `https://static.toss.im/png-icons/securities/icn-sec-fill-${targetCode}.png`;
+    
+    // 2순위: 네이버 증권 CDN (ETF 브랜드 또는 개별 종목)
+    let naverUrl = '';
+    const brands = ['TIGER', 'KODEX', 'ACE', 'SOL', 'PLUS', 'RISE'];
+    const matchedBrand = brands.find(b => normName.toUpperCase().includes(b));
+    if (matchedBrand) {
+      naverUrl = `https://ssl.pstatic.net/imgstock/fn/real/logo/etf/StockKRETF${matchedBrand}.svg`;
+    } else if (targetCode && targetCode.length === 6) {
+      naverUrl = `https://ssl.pstatic.net/imgstock/fn/real/logo/stock/Stock${targetCode}.svg`;
+    }
+
+    const initialText = normName.slice(0, 2);
+
+    return `
+      <img src="${tossUrl}" alt="${normName}"
+        class="w-full h-full object-contain p-0.5"
+        loading="lazy"
+        onerror="
+          if (this.dataset.triedNaver !== '1' && '${naverUrl}') {
+            this.dataset.triedNaver = '1';
+            this.src = '${naverUrl}';
+          } else {
+            this.style.display = 'none';
+            if (this.nextElementSibling) this.nextElementSibling.style.display = 'flex';
+          }
+        "
+      />
+      <div class="w-full h-full rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center hidden">
+        ${initialText}
+      </div>
+    `;
+  },
+
+  /**
+   * 종목별 원형 아이콘 컨테이너 및 이미지를 생성합니다.
+   */
+  getStockIconHtml(code, name, sizeClass = "w-10 h-10") {
+    return `
+      <div class="relative ${sizeClass} rounded-full bg-slate-50 border border-slate-200/90 shadow-2xs shrink-0 flex items-center justify-center overflow-hidden select-none">
+        ${this.getStockIconInnerHtml(code, name)}
+      </div>
+    `;
+  },
+
+  /**
    * 보유 종목 카드 리스트를 렌더링합니다.
    */
   renderHoldingsList(holdings, totalAsset, containerId) {
@@ -179,8 +243,8 @@ window.DashboardUI = {
       }
 
       card.innerHTML = `
-        <div class="flex items-center gap-3 min-w-0 flex-1">
-          <div class="w-1.5 self-stretch min-h-[38px] my-0.5 rounded-full shrink-0" style="background-color: ${item.color || '#3b82f6'}"></div>
+        <div class="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+          ${this.getStockIconHtml(item.code, item.name)}
           <div class="min-w-0 flex-1 pr-1">
             ${this.formatStockNameHtml(item.name)}
           </div>
@@ -218,6 +282,10 @@ window.DashboardUI = {
     document.getElementById('modalStockCode').innerText = stock.code;
     const dot = document.getElementById('modalColorDot');
     if (dot) dot.style.backgroundColor = stock.color || '#3b82f6';
+    const iconContainer = document.getElementById('modalStockIcon');
+    if (iconContainer) {
+      iconContainer.innerHTML = this.getStockIconInnerHtml(stock.code, stock.name);
+    }
     
     document.getElementById('modalPrice').innerText = window.DashboardState.formatNumber(stock.price) + '원';
 
