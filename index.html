@@ -219,11 +219,8 @@
   <div id="stockModalBackdrop" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 transition-opacity duration-300 opacity-0 pointer-events-none flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="if(event.target === this) window.DashboardUI.closeStockModal()">
     <div id="stockModalCard" class="w-full max-w-[480px] bg-white border border-slate-200 rounded-t-3xl sm:rounded-2xl p-4 sm:p-5 shadow-2xl transition-all duration-300 transform translate-y-full sm:translate-y-4 sm:scale-95 space-y-3.5 max-h-[92vh] overflow-y-auto">
       
-      <!-- 상단 드래그 핸들 (모바일 바텀시트 UX 표준: 탭 또는 아래로 쓸어내려 닫기) -->
-      <div class="w-12 h-1.5 bg-slate-300 hover:bg-slate-400 rounded-full mx-auto -mt-1 mb-2 cursor-pointer transition-colors" onclick="window.DashboardUI.closeStockModal()" title="닫기"></div>
-
       <!-- 1. 최상단 네비게이션 헤더: 보유 계좌 배지 & 종목코드 & 닫기 버튼 -->
-      <div class="flex items-center justify-between pb-1 border-b border-slate-100">
+      <div class="flex items-center justify-between pb-1.5 border-b border-slate-100">
         <div class="flex items-center gap-2">
           <span class="px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold bg-blue-50 text-blue-700 border border-blue-200/70" id="modalAccountBadge">위탁</span>
           <span class="text-xs sm:text-sm text-slate-400 font-medium tabular-nums" id="modalStockCode">-</span>
@@ -282,40 +279,40 @@
             <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
             <span>매수 현황 (투자 원금)</span>
           </div>
-          <div class="grid grid-cols-3 gap-2 text-center">
-            <div class="bg-white border border-slate-200/70 rounded-lg p-2">
-              <div class="text-[11px] text-slate-500 font-medium">보유 수량</div>
-              <div class="text-sm sm:text-base font-bold text-slate-900 tabular-nums mt-0.5" id="modalQty">-주</div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="bg-white border border-slate-200/70 rounded-lg p-2.5 text-right">
+              <div class="text-xs sm:text-sm text-slate-500 font-medium">보유 수량</div>
+              <div class="text-base sm:text-lg font-bold text-slate-900 tabular-nums mt-0.5" id="modalQty">-주</div>
             </div>
-            <div class="bg-white border border-slate-200/70 rounded-lg p-2">
-              <div class="text-[11px] text-slate-500 font-medium">매수 단가 (평균)</div>
-              <div class="text-sm sm:text-base font-bold text-slate-900 tabular-nums mt-0.5" id="modalBuyPrice">-원</div>
+            <div class="bg-white border border-slate-200/70 rounded-lg p-2.5 text-right">
+              <div class="text-xs sm:text-sm text-slate-500 font-medium">매수 단가 (평균)</div>
+              <div class="text-base sm:text-lg font-bold text-slate-900 tabular-nums mt-0.5" id="modalBuyPrice">-원</div>
             </div>
-            <div class="bg-white border border-slate-200/70 rounded-lg p-2">
-              <div class="text-[11px] text-slate-500 font-medium">매수 금액 (원금)</div>
-              <div class="text-sm sm:text-base font-bold text-slate-900 tabular-nums mt-0.5" id="modalBuyTotal">-원</div>
+            <div class="bg-white border border-slate-200/70 rounded-lg p-2.5 text-right">
+              <div class="text-xs sm:text-sm text-slate-500 font-medium">매수 금액 (원금)</div>
+              <div class="text-base sm:text-lg font-bold text-slate-900 tabular-nums mt-0.5" id="modalBuyTotal">-만원</div>
             </div>
           </div>
         </div>
 
-        <!-- 그룹 B: 평가 현황 (현재 성과) -->
+        <!-- 그룹 B: 평가 현황 (현재 성과) - 비중, 평가손익, 평가금액 순 -->
         <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3">
           <div class="text-xs font-bold text-slate-600 mb-2 flex items-center gap-1.5">
             <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
             <span>평가 현황 (현재 성과)</span>
           </div>
-          <div class="grid grid-cols-3 gap-2 text-center">
-            <div class="bg-white border border-slate-200/70 rounded-lg p-2">
-              <div class="text-[11px] text-slate-500 font-medium">평가 금액</div>
-              <div class="text-sm sm:text-base font-bold text-slate-900 tabular-nums mt-0.5" id="modalTotal">-원</div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="bg-white border border-slate-200/70 rounded-lg p-2.5 text-right">
+              <div class="text-xs sm:text-sm text-slate-500 font-medium">계좌 내 비중</div>
+              <div class="text-base sm:text-lg font-bold text-blue-600 tabular-nums mt-0.5" id="modalRatio">-%</div>
             </div>
-            <div class="bg-white border border-slate-200/70 rounded-lg p-2">
-              <div class="text-[11px] text-slate-500 font-medium">계좌 내 비중</div>
-              <div class="text-sm sm:text-base font-bold text-blue-600 tabular-nums mt-0.5" id="modalRatio">-%</div>
+            <div class="bg-white border border-slate-200/70 rounded-lg p-2.5 text-right">
+              <div class="text-xs sm:text-sm text-slate-500 font-medium">누적 평가 손익</div>
+              <div class="text-base sm:text-lg font-bold tabular-nums mt-0.5 leading-tight" id="modalProfit">-</div>
             </div>
-            <div class="bg-white border border-slate-200/70 rounded-lg p-2">
-              <div class="text-[11px] text-slate-500 font-medium">누적 평가 손익</div>
-              <div class="text-sm sm:text-base font-bold tabular-nums mt-0.5" id="modalProfit">-</div>
+            <div class="bg-white border border-slate-200/70 rounded-lg p-2.5 text-right">
+              <div class="text-xs sm:text-sm text-slate-500 font-medium">평가 금액</div>
+              <div class="text-base sm:text-lg font-bold text-slate-900 tabular-nums mt-0.5" id="modalTotal">-만원</div>
             </div>
           </div>
         </div>
@@ -336,11 +333,11 @@
   </div>
 
   <!-- 3. 모듈화된 자바스크립트 로드 순서 (캐시 방지 파라미터 적용) -->
-  <script src="./js/api.js?v=20261010_01"></script>
-  <script src="./js/state.js?v=20261010_01"></script>
-  <script src="./js/charts.js?v=20261010_01"></script>
-  <script src="./js/ui.js?v=20261010_01"></script>
-  <script src="./js/app.js?v=20261010_01"></script>
+  <script src="./js/api.js?v=20261010_02"></script>
+  <script src="./js/state.js?v=20261010_02"></script>
+  <script src="./js/charts.js?v=20261010_02"></script>
+  <script src="./js/ui.js?v=20261010_02"></script>
+  <script src="./js/app.js?v=20261010_02"></script>
 </body>
 
 </html>

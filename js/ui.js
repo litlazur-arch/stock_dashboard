@@ -346,9 +346,9 @@ window.DashboardUI = {
       badgeEl.innerText = stock.account || '보유 계좌';
     }
 
-    // 보유 수량 및 평가액
+    // 보유 수량 및 평가액 (만원 단위 일치)
     document.getElementById('modalQty').innerText = window.DashboardState.formatNumber(stock.qty) + '주';
-    document.getElementById('modalTotal').innerText = window.DashboardState.formatKoreanMoney(stock.total) + '원';
+    document.getElementById('modalTotal').innerText = stock.total > 0 ? (window.DashboardState.formatManWonNum(stock.total) + '만원') : '-';
 
     // 계좌 내 비중
     const ratio = totalAccountAsset > 0 ? ((stock.total / totalAccountAsset) * 100).toFixed(1) : '0.0';
@@ -363,7 +363,7 @@ window.DashboardUI = {
     const buyPrice = stock.buyPrice || (buyTotal > 0 && stock.qty ? Math.round(buyTotal / stock.qty) : 0);
 
     if (buyTotalEl) {
-      buyTotalEl.innerText = buyTotal > 0 ? (window.DashboardState.formatKoreanMoney(buyTotal) + '원') : '-';
+      buyTotalEl.innerText = buyTotal > 0 ? (window.DashboardState.formatManWonNum(buyTotal) + '만원') : '-';
     }
     if (buyPriceEl) {
       buyPriceEl.innerText = buyPrice > 0 ? (window.DashboardState.formatNumber(buyPrice) + '원') : '-';
@@ -372,19 +372,20 @@ window.DashboardUI = {
     if (profitEl) {
       if (buyTotal > 0 && stock.total > 0) {
         const profitAmt = Math.round(stock.total - buyTotal);
-        const profitPct = ((profitAmt / buyTotal) * 100).toFixed(2);
+        const profitPct = Math.abs((profitAmt / buyTotal) * 100).toFixed(2);
+        const manWonAmt = window.DashboardState.formatManWonNum(Math.abs(profitAmt));
         if (profitAmt > 0) {
-          profitEl.className = "text-base font-bold text-red-600 tabular-nums mt-1";
-          profitEl.innerText = `+${window.DashboardState.formatKoreanMoney(profitAmt)}원 (+${profitPct}%)`;
+          profitEl.className = "text-base sm:text-lg font-bold text-red-600 tabular-nums mt-0.5 leading-tight";
+          profitEl.innerText = `+${manWonAmt}만원 +${profitPct}%`;
         } else if (profitAmt < 0) {
-          profitEl.className = "text-base font-bold text-blue-600 tabular-nums mt-1";
-          profitEl.innerText = `-${window.DashboardState.formatKoreanMoney(Math.abs(profitAmt))}원 (${profitPct}%)`;
+          profitEl.className = "text-base sm:text-lg font-bold text-blue-600 tabular-nums mt-0.5 leading-tight";
+          profitEl.innerText = `-${manWonAmt}만원 -${profitPct}%`;
         } else {
-          profitEl.className = "text-base font-bold text-slate-500 tabular-nums mt-1";
-          profitEl.innerText = `0원 (0.00%)`;
+          profitEl.className = "text-base sm:text-lg font-bold text-slate-500 tabular-nums mt-0.5 leading-tight";
+          profitEl.innerText = `0만원 0.00%`;
         }
       } else {
-        profitEl.className = "text-base font-bold text-slate-500 tabular-nums mt-1";
+        profitEl.className = "text-base sm:text-lg font-bold text-slate-500 tabular-nums mt-0.5 leading-tight";
         profitEl.innerText = `-`;
       }
     }
