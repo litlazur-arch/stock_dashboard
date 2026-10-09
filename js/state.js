@@ -81,6 +81,54 @@ window.DashboardState = {
     return Math.round(num / 10000).toLocaleString('ko-KR');
   },
 
+  /**
+   * 데이터 정규화 및 자가 치유 (수량/매수단가 전치 오류 및 총자산 보정)
+   * @param {Object} data 
+   * @returns {Object}
+   */
+  normalizeData(data) {
+    if (!data) return null;
+    if (data.holdings && Array.isArray(data.holdings)) {
+      data.holdings.forEach(h => {
+        // 1. 배포된 구버전 GAS의 컬럼 스왑 버그 자동 복원 (자가 치유):
+        // 구버전 GAS는 buyTotal에 실제 수량(예: 667)을 넣고, qty에 매수단가(예: 49,055)를 넣어 total이 827억으로 폭증함
+        if (h.buyPrice === 0 && h.buyTotal > 0 && h.buyTotal < 50000 && h.qty > 500 && (h.total > 5000000000 || (h.price > 0 && h.total > h.buyTotal * h.price * 2))) {
+          const actualQty = h.buyTotal;
+          const actualBuyPrice = h.qty;
+          h.qty = actualQty;
+          h.buyPrice = actualBuyPrice;
+          h.buyTotal = Math.round(actualQty * actualBuyPrice);
+          h.total = Math.round(actualQty * (h.price || actualBuyPrice));
+        }
+
+        // 2. 매수금액 및 매수단가 보정
+        if ((!h.buyTotal || h.buyTotal === 0) && h.buyPrice > 0 && h.qty > 0) {
+          h.buyTotal = Math.round(h.buyPrice * h.qty);
+        }
+        if ((!h.buyPrice || h.buyPrice === 0) && h.buyTotal > 0 && h.qty > 0) {
+          h.buyPrice = Math.round(h.buyTotal / h.qty);
+        }
+        if ((!h.total || h.total === 0) && h.qty > 0 && h.price > 0) {
+          h.total = Math.round(h.qty * h.price);
+        }
+      });
+    }
+
+    if (data.history && Array.isArray(data.history)) {
+      data.history.forEach(row => {
+        const sum = (row.brokerK_Asset || 0) + (row.brokerJ_Asset || 0) +
+                    (row.pensionK_Asset || 0) + (row.pensionJ_Asset || 0) +
+                    (row.retire_Asset || 0) + (row.irp_Asset || 0) +
+                    (row.tlpK_Asset || 0) + (row.tlpJ_Asset || 0);
+        if (sum > 0) {
+          row.totalAsset = sum;
+        }
+      });
+    }
+
+    return data;
+  },
+
   // 로컬 스토리지 캐시 키 (버전 관리)
   CACHE_KEY: 'stock_dashboard_cache_v2',
 
@@ -94,6 +142,13 @@ window.DashboardState = {
       if (cached) {
         const parsed = JSON.parse(cached);
         if (parsed && parsed.data && parsed.data.holdings) {
+          parsed.data = this.normalizeData(parsed.data);
+          // 이상치(단일 종목 50억 초과)가 여전히 남은 경우 캐시 폐기
+          const hasAnomaly = parsed.data.holdings.some(h => (h.total || 0) > 5000000000);
+          if (hasAnomaly) {
+            localStorage.removeItem(this.CACHE_KEY);
+            return null;
+          }
           return parsed;
         }
       }
@@ -110,8 +165,9 @@ window.DashboardState = {
   saveCachedData(data) {
     try {
       if (!data || !data.holdings) return;
+      const normalized = this.normalizeData(data);
       const payload = {
-        data: data,
+        data: normalized,
         timestamp: Date.now()
       };
       localStorage.setItem(this.CACHE_KEY, JSON.stringify(payload));

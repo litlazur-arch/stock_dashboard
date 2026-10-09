@@ -43,26 +43,48 @@ function doGet(e) {
           if (monthMap[monthKey] && monthMap[monthKey].totalDiv > 0 && totalDiv === 0) continue;
           if (!monthMap[monthKey]) monthKeys.push(monthKey);
 
+          var brokerK_Asset = Number(briefValues[r][8]) || 0;
+          var brokerK_Div = Number(briefValues[r][9]) || 0;
+          var brokerJ_Asset = Number(briefValues[r][10]) || 0;
+          var brokerJ_Div = Number(briefValues[r][11]) || 0;
+          var pensionK_Asset = Number(briefValues[r][12]) || 0;
+          var pensionK_Div = Number(briefValues[r][13]) || 0;
+          var pensionJ_Asset = Number(briefValues[r][14]) || 0;
+          var pensionJ_Div = Number(briefValues[r][15]) || 0;
+          var retire_Asset = Number(briefValues[r][16]) || 0;
+          var retire_Div = Number(briefValues[r][17]) || 0;
+          var irp_Asset = Number(briefValues[r][18]) || 0;
+          var irp_Div = Number(briefValues[r][19]) || 0;
+          var tlpK_Asset = Number(briefValues[r][20]) || 0;
+          var tlpK_Div = Number(briefValues[r][21]) || 0;
+          var tlpJ_Asset = Number(briefValues[r][22]) || 0;
+          var tlpJ_Div = Number(briefValues[r][23]) || 0;
+
+          var sumAllAccounts = brokerK_Asset + brokerJ_Asset + pensionK_Asset + pensionJ_Asset + retire_Asset + irp_Asset + tlpK_Asset + tlpJ_Asset;
+          if (sumAllAccounts > 0) {
+            totalAsset = sumAllAccounts;
+          }
+
           monthMap[monthKey] = {
             month: monthKey,
             totalAsset: totalAsset,
             totalDiv: totalDiv,
-            brokerK_Asset: Number(briefValues[r][8]) || 0,
-            brokerK_Div: Number(briefValues[r][9]) || 0,
-            brokerJ_Asset: Number(briefValues[r][10]) || 0,
-            brokerJ_Div: Number(briefValues[r][11]) || 0,
-            pensionK_Asset: Number(briefValues[r][12]) || 0,
-            pensionK_Div: Number(briefValues[r][13]) || 0,
-            pensionJ_Asset: Number(briefValues[r][14]) || 0,
-            pensionJ_Div: Number(briefValues[r][15]) || 0,
-            retire_Asset: Number(briefValues[r][16]) || 0,
-            retire_Div: Number(briefValues[r][17]) || 0,
-            irp_Asset: Number(briefValues[r][18]) || 0,
-            irp_Div: Number(briefValues[r][19]) || 0,
-            tlpK_Asset: Number(briefValues[r][20]) || 0,
-            tlpK_Div: Number(briefValues[r][21]) || 0,
-            tlpJ_Asset: Number(briefValues[r][22]) || 0,
-            tlpJ_Div: Number(briefValues[r][23]) || 0
+            brokerK_Asset: brokerK_Asset,
+            brokerK_Div: brokerK_Div,
+            brokerJ_Asset: brokerJ_Asset,
+            brokerJ_Div: brokerJ_Div,
+            pensionK_Asset: pensionK_Asset,
+            pensionK_Div: pensionK_Div,
+            pensionJ_Asset: pensionJ_Asset,
+            pensionJ_Div: pensionJ_Div,
+            retire_Asset: retire_Asset,
+            retire_Div: retire_Div,
+            irp_Asset: irp_Asset,
+            irp_Div: irp_Div,
+            tlpK_Asset: tlpK_Asset,
+            tlpK_Div: tlpK_Div,
+            tlpJ_Asset: tlpJ_Asset,
+            tlpJ_Div: tlpJ_Div
           };
         }
       }
@@ -96,7 +118,17 @@ function doGet(e) {
 
       var lastRowIdx = 3;
       for (var rIdx = 3; rIdx < values.length; rIdx++) {
-        if (values[rIdx][1] && Number(values[rIdx][2]) > 0) lastRowIdx = rIdx;
+        var rawD = values[rIdx][1];
+        if (!rawD) continue;
+        var hasQty = false;
+        var maxCheckCol = Math.min(cfg.maxCol, values[1].length);
+        for (var c = 2; c < maxCheckCol; c += 8) {
+          if (Number(values[rIdx][c + 4]) > 0) {
+            hasQty = true;
+            break;
+          }
+        }
+        if (hasQty) lastRowIdx = rIdx;
       }
 
       var maxC = Math.min(cfg.maxCol, values[1].length);
@@ -105,19 +137,22 @@ function doGet(e) {
         var name = String(values[1][col + 1] || "").trim();
         if (!code || !name || code.indexOf("합계") !== -1 || name.indexOf("합계") !== -1) continue;
 
-        var price = Number(values[lastRowIdx][col]) || 0;
-        var openPrice = Number(values[lastRowIdx][col + 2]) || 0;
-        var buyPrice = Number(values[lastRowIdx][col + 3]) || 0;
-        var buyTotal = Number(values[lastRowIdx][col + 4]) || 0;
-        var qty = Number(values[lastRowIdx][col + 5]) || 0;
-        var total = Number(values[lastRowIdx][col + 7]) || (qty * price);
+        var stockRow = lastRowIdx;
+        if (!values[stockRow] || !Number(values[stockRow][col + 4])) {
+          for (var r = values.length - 1; r >= 3; r--) {
+            if (values[r] && Number(values[r][col + 4]) > 0) {
+              stockRow = r;
+              break;
+            }
+          }
+        }
 
-        if (buyTotal === 0 && buyPrice > 0 && qty > 0) {
-          buyTotal = buyPrice * qty;
-        }
-        if (buyPrice === 0 && buyTotal > 0 && qty > 0) {
-          buyPrice = Math.round(buyTotal / qty);
-        }
+        var price = Number(values[lastRowIdx] && values[lastRowIdx][col]) || Number(values[stockRow] && values[stockRow][col]) || 0;
+        var qty = Number(values[stockRow] && values[stockRow][col + 4]) || 0;
+        var buyPrice = Number(values[stockRow] && values[stockRow][col + 5]) || 0;
+        var total = Number(values[stockRow] && values[stockRow][col + 6]) || (qty * price);
+        var buyTotal = (buyPrice > 0 && qty > 0) ? Math.round(buyPrice * qty) : 0;
+        var sheetChangeRate = Number(values[stockRow] && values[stockRow][col + 1]) || 0;
 
         if (qty > 0) {
           holdingsList.push({
@@ -128,7 +163,8 @@ function doGet(e) {
             price: price,
             total: total,
             buyPrice: buyPrice,
-            buyTotal: buyTotal
+            buyTotal: buyTotal,
+            changeRate: sheetChangeRate
           });
         }
       }
@@ -155,7 +191,7 @@ function doGet(e) {
           item.changeRate = market.changeRate;
           item.changeAmount = market.changeAmount;
         } else {
-          item.changeRate = 0;
+          if (item.changeRate === undefined) item.changeRate = 0;
         }
 
         if (history20Map[item.code]) {

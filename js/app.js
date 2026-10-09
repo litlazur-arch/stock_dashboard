@@ -95,10 +95,11 @@ window.DashboardApp = {
 
     try {
       const data = await window.DashboardAPI.fetchStockData();
-      window.DashboardState.rawData = data;
+      const normalized = window.DashboardState.normalizeData(data);
+      window.DashboardState.rawData = normalized;
 
       // 최신 데이터 로컬 스토리지에 캐싱
-      window.DashboardState.saveCachedData(data);
+      window.DashboardState.saveCachedData(normalized);
 
       window.DashboardUI.setStatus('success');
       window.DashboardUI.setLoading(false);
@@ -160,6 +161,11 @@ window.DashboardApp = {
 
     // 2. 헤더 정보 업데이트
     document.getElementById('currentAccountTitle').innerText = activeAccount.name;
+    const isTotal = activeAccount.id === 'all' || activeAccount.id === 'all_k' || (activeAccount.name && activeAccount.name.includes('통합'));
+    const headerAssetLabel = document.getElementById('headerAssetLabel');
+    if (headerAssetLabel) {
+      headerAssetLabel.innerText = isTotal ? '총 평가 자산' : '계좌 평가 자산';
+    }
 
     // 3. 해당 계좌의 보유 종목 추출 및 총 자산 / 전일 대비 증감액 계산
     const matchedHoldings = rawData.holdings.filter(h => activeAccount.filter.includes(h.account));
