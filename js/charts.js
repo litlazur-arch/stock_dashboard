@@ -232,9 +232,9 @@ window.DashboardCharts = {
         }
         if (targetCard) {
           targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          targetCard.classList.add('ring-2', 'ring-indigo-400', 'bg-indigo-950/60');
+          targetCard.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50/80');
           setTimeout(() => {
-            targetCard.classList.remove('ring-2', 'ring-indigo-400', 'bg-indigo-950/60');
+            targetCard.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50/80');
           }, 1600);
         }
       });

@@ -71,18 +71,11 @@ window.DashboardUI = {
     const normName = String(name || '').trim();
     
     // 우선주 -> 본주 매핑 (토스/네이버 CDN 호환성)
-    const baseCodeMap = {
-      '005935': '005930', // 삼성전자우 -> 삼성전자
-      '005385': '005380', // 현대차우
-      '005387': '005380', // 현대차2우B
-      '005389': '005380', // 현대차3우B
-      '051915': '051910', // LG화학우
-      '003555': '003550', // LG우
-    };
+    const baseCodeMap = window.DashboardState.PREFERRED_STOCK_MAP || {};
     const targetCode = baseCodeMap[normCode] || normCode;
     
     // ETF 브랜드 감지
-    const brands = ['TIGER', 'KODEX', 'ACE', 'SOL', 'PLUS', 'RISE'];
+    const brands = window.DashboardState.ETF_BRANDS || ['TIGER', 'KODEX', 'ACE', 'SOL', 'PLUS', 'RISE'];
     const matchedBrand = brands.find(b => normName.toUpperCase().includes(b));
     
     let primaryUrl = '';
@@ -273,7 +266,7 @@ window.DashboardUI = {
     // 네이버 증권 외부 링크
     const naverLink = document.getElementById('modalNaverLink');
     if (naverLink) {
-      naverLink.href = `https://m.stock.naver.com/domestic/stock/${stock.code}/total`;
+      naverLink.href = window.DashboardAPI.getNaverStockUrl(stock.code);
     }
 
     // 최근 20영업일(1개월) 시세 데이터 렌더링
@@ -469,15 +462,3 @@ window.DashboardUI = {
     }
   }
 };
-
-// 배경 클릭 시 바텀시트 닫기 이벤트 리스너 등록
-document.addEventListener('DOMContentLoaded', () => {
-  const backdrop = document.getElementById('stockModalBackdrop');
-  if (backdrop) {
-    backdrop.addEventListener('click', (e) => {
-      if (e.target.id === 'stockModalBackdrop') {
-        window.DashboardUI.closeStockModal();
-      }
-    });
-  }
-});

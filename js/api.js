@@ -25,5 +25,16 @@ window.DashboardAPI = {
       console.error("[API Error] 데이터 수신 실패:", error);
       throw error;
     }
+  },
+
+  /**
+   * 네이버 페이 증권 종목 상세 모바일 URL을 반환합니다.
+   * @param {string} code - 6자리 종목 코드
+   * @returns {string}
+   */
+  getNaverStockUrl(code) {
+    if (!code) return '#';
+    const normCode = String(code).trim();
+    return `https://m.stock.naver.com/domestic/stock/${normCode}/total`;
   }
 };
