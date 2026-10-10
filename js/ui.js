@@ -144,51 +144,15 @@ window.DashboardUI = {
       return;
     }
 
-    // 지정 우선순위 종목 순서 (1~11위)
-    const priorityCodes = [
-      "000660", // 1. SK하이닉스
-      "005380", // 2. 현대차
-      "005935", // 3. 삼성전자우
-      "012450", // 4. 한화에어로스페이스
-      "489790", // 5. 한화비전
-      "010950", // 6. S-Oil
-      "498400", // 7. Kodex200타켓위클리커버드콜
-      "133690", // 8. Tiger미국나스닥100
-      "367380", // 9. Ace 미국나스닥100
-      "458730", // 10. Tiger미국배당다우존스
-      "490490"  // 11. SOL미국배당미국채혼합50
-    ];
-
-    function getPriorityRank(item) {
-      const codeIdx = priorityCodes.indexOf(item.code);
-      if (codeIdx !== -1) return codeIdx;
-
-      const norm = (item.name || "").replace(/[\s\-_]/g, '').toUpperCase();
-      if (norm.includes("SK하이닉스")) return 0;
-      if (norm.includes("현대차")) return 1;
-      if (norm.includes("삼성전자우")) return 2;
-      if (norm.includes("한화에어로")) return 3;
-      if (norm.includes("한화비전")) return 4;
-      if (norm.includes("SOIL") || norm.includes("S-OIL")) return 5;
-      if (norm.includes("위클리커버드콜")) return 6;
-      if (norm.includes("TIGER") && norm.includes("나스닥100")) return 7;
-      if (norm.includes("ACE") && norm.includes("나스닥100")) return 8;
-      if (norm.includes("TIGER") && norm.includes("배당다우존스")) return 9;
-      if (norm.includes("SOL") && norm.includes("미국채혼합")) return 10;
-
-      return 999;
-    }
-
-    // 4. 지정 종목 우선 정렬 후 나머지 종목은 평가금액 큰 순서로 정렬
+    // 4. 지정 우선순위 종목 정렬 후 나머지 종목은 평가금액 내림차순 정렬
     const sorted = [...holdings].sort((a, b) => {
-      const rankA = getPriorityRank(a);
-      const rankB = getPriorityRank(b);
+      const rankA = window.DashboardState.getHoldingPriorityRank(a);
+      const rankB = window.DashboardState.getHoldingPriorityRank(b);
 
       if (rankA !== 999 || rankB !== 999) {
         if (rankA !== rankB) return rankA - rankB;
       }
-
-      return b.total - a.total;
+      return (b.total || 0) - (a.total || 0);
     });
 
     sorted.forEach(item => {
@@ -198,53 +162,9 @@ window.DashboardUI = {
       card.className = "p-3 bg-white border border-slate-200/90 rounded-xl flex items-center justify-between hover:border-blue-400 hover:shadow-xs transition-all duration-300 shadow-2xs cursor-pointer active:scale-[0.99]";
       card.onclick = () => this.openStockModal(item, totalAsset);
       
-      // 전일 대비 증감 계산 (금액 & 비율)
-      let rateNum = 0;
-      let diffAmtNum = 0;
-
-      // 1. 기준가(전일종가)와 현재가가 둘 다 있으면 직접 계산
-      if (item.basePrice && item.price) {
-        diffAmtNum = Math.round(item.price - item.basePrice);
-        if (item.basePrice > 0) {
-          rateNum = ((item.price - item.basePrice) / item.basePrice) * 100;
-        }
-      }
-
-      // 2. changeRate 또는 changeAmount 명시값이 있는 경우 반영
-      if (item.changeRate !== undefined && item.changeRate !== null) {
-        const parsedRate = parseFloat(item.changeRate);
-        if (!isNaN(parsedRate)) rateNum = parsedRate;
-      }
-      if (item.changeAmount !== undefined && item.changeAmount !== null && item.changeAmount !== 0) {
-        diffAmtNum = Math.round(item.changeAmount);
-      } else if (diffAmtNum === 0 && rateNum !== 0 && item.price) {
-        diffAmtNum = Math.round(item.price * (rateNum / (100 + rateNum)));
-      }
-
-      // 3. 만약 rateNum과 diffAmtNum의 부호가 불일치하면 rateNum을 기준으로 일치화
-      if (rateNum < 0 && diffAmtNum > 0) {
-        diffAmtNum = -Math.abs(diffAmtNum);
-      } else if (rateNum > 0 && diffAmtNum < 0) {
-        diffAmtNum = Math.abs(diffAmtNum);
-      }
-
-      let diffAmtHtml = '';
-      let diffRateHtml = '';
-
-      if (rateNum > 0 || (rateNum === 0 && diffAmtNum > 0)) {
-        const absAmt = Math.abs(diffAmtNum);
-        const absRate = Math.abs(rateNum);
-        diffAmtHtml = `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight leading-tight">+${window.DashboardState.formatNumber(absAmt)}원</span>`;
-        diffRateHtml = `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight leading-tight">+${absRate.toFixed(2)}%</span>`;
-      } else if (rateNum < 0 || (rateNum === 0 && diffAmtNum < 0)) {
-        const absAmt = Math.abs(diffAmtNum);
-        const absRate = Math.abs(rateNum);
-        diffAmtHtml = `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight leading-tight">-${window.DashboardState.formatNumber(absAmt)}원</span>`;
-        diffRateHtml = `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight leading-tight">-${absRate.toFixed(2)}%</span>`;
-      } else {
-        diffAmtHtml = `<span class="text-sm font-medium text-slate-500 tabular-nums tracking-tight leading-tight">0원</span>`;
-        diffRateHtml = `<span class="text-sm font-medium text-slate-500 tabular-nums tracking-tight leading-tight">0.00%</span>`;
-      }
+      // 전일 대비 증감 계산 및 서식화 (통일된 헬퍼 사용)
+      const { diffAmt, rate } = window.DashboardState.calculatePriceDiff(item);
+      const { diffAmtHtml, diffRateHtml } = window.DashboardState.formatSignedDiff(diffAmt, rate);
 
       card.innerHTML = `
         <div class="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">

@@ -82,6 +82,115 @@ window.DashboardState = {
   },
 
   /**
+   * 종목별 전일 대비 가격 및 등락률을 통일된 기준으로 계산합니다.
+   * @param {Object} item - 보유 종목 객체
+   * @returns {{diffAmt: number, rate: number, isUp: boolean, isDown: boolean, isFlat: boolean}}
+   */
+  calculatePriceDiff(item) {
+    if (!item) return { diffAmt: 0, rate: 0, isUp: false, isDown: false, isFlat: true };
+
+    let rate = 0;
+    let diffAmt = 0;
+
+    // 1. 기준가(전일 종가)와 현재가가 존재하면 직접 계산
+    if (item.basePrice && item.price) {
+      diffAmt = Math.round(item.price - item.basePrice);
+      if (item.basePrice > 0) {
+        rate = ((item.price - item.basePrice) / item.basePrice) * 100;
+      }
+    }
+
+    // 2. changeRate 또는 changeAmount 명시값이 있는 경우 반영
+    if (item.changeRate !== undefined && item.changeRate !== null) {
+      const parsedRate = parseFloat(item.changeRate);
+      if (!isNaN(parsedRate)) rate = parsedRate;
+    }
+    if (item.changeAmount !== undefined && item.changeAmount !== null && item.changeAmount !== 0) {
+      diffAmt = Math.round(item.changeAmount);
+    } else if (diffAmt === 0 && rate !== 0 && item.price) {
+      diffAmt = Math.round(item.price * (rate / (100 + rate)));
+    }
+
+    // 3. 부호 불일치 보정 (rate 기준 부호 일치화)
+    if (rate < 0 && diffAmt > 0) {
+      diffAmt = -Math.abs(diffAmt);
+    } else if (rate > 0 && diffAmt < 0) {
+      diffAmt = Math.abs(diffAmt);
+    }
+
+    const isUp = rate > 0 || (rate === 0 && diffAmt > 0);
+    const isDown = rate < 0 || (rate === 0 && diffAmt < 0);
+    const isFlat = !isUp && !isDown;
+
+    return { diffAmt, rate, isUp, isDown, isFlat };
+  },
+
+  /**
+   * 전일 대비 증감 수치를 통일된 핀테크 스타일 HTML 문자열로 변환합니다.
+   * @param {number} diffAmt
+   * @param {number} rate
+   * @returns {{diffAmtHtml: string, diffRateHtml: string}}
+   */
+  formatSignedDiff(diffAmt, rate) {
+    const isUp = rate > 0 || (rate === 0 && diffAmt > 0);
+    const isDown = rate < 0 || (rate === 0 && diffAmt < 0);
+    const absAmt = Math.abs(diffAmt);
+    const absRate = Math.abs(rate);
+
+    if (isUp) {
+      return {
+        diffAmtHtml: `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight leading-tight">+${this.formatNumber(absAmt)}원</span>`,
+        diffRateHtml: `<span class="text-sm font-bold text-red-600 tabular-nums tracking-tight leading-tight">+${absRate.toFixed(2)}%</span>`
+      };
+    } else if (isDown) {
+      return {
+        diffAmtHtml: `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight leading-tight">-${this.formatNumber(absAmt)}원</span>`,
+        diffRateHtml: `<span class="text-sm font-bold text-blue-600 tabular-nums tracking-tight leading-tight">-${absRate.toFixed(2)}%</span>`
+      };
+    } else {
+      return {
+        diffAmtHtml: `<span class="text-sm font-medium text-slate-500 tabular-nums tracking-tight leading-tight">0원</span>`,
+        diffRateHtml: `<span class="text-sm font-medium text-slate-500 tabular-nums tracking-tight leading-tight">0.00%</span>`
+      };
+    }
+  },
+
+  // 보유 종목 우선순위 정렬 기준 테이블 (1~11위)
+  PRIORITY_HOLDINGS: [
+    { code: "000660", keyword: "SK하이닉스" },
+    { code: "005380", keyword: "현대차" },
+    { code: "005935", keyword: "삼성전자우" },
+    { code: "012450", keyword: "한화에어로" },
+    { code: "489790", keyword: "한화비전" },
+    { code: "010950", keyword: "SOIL" },
+    { code: "498400", keyword: "위클리커버드콜" },
+    { code: "133690", keyword: "나스닥100" },
+    { code: "367380", keyword: "나스닥100" },
+    { code: "458730", keyword: "배당다우존스" },
+    { code: "490490", keyword: "미국채혼합" }
+  ],
+
+  /**
+   * 종목의 우선순위 정렬 순번을 반환합니다.
+   * @param {Object} item 
+   * @returns {number}
+   */
+  getHoldingPriorityRank(item) {
+    if (!item) return 999;
+    const code = String(item.code || '').trim();
+    const idx = this.PRIORITY_HOLDINGS.findIndex(p => p.code === code);
+    if (idx !== -1) return idx;
+
+    const norm = (item.name || "").replace(/[\s\-_]/g, '').toUpperCase();
+    for (let i = 0; i < this.PRIORITY_HOLDINGS.length; i++) {
+      if (norm.includes(this.PRIORITY_HOLDINGS[i].keyword)) {
+        return i;
+      }
+    }
+    return 999;
+  },
+
+  /**
    * 데이터 정규화 및 자가 치유 (수량/매수단가 전치 오류 및 총자산 보정)
    * @param {Object} data 
    * @returns {Object}

@@ -172,17 +172,12 @@ window.DashboardApp = {
     const currentTotalAsset = matchedHoldings.reduce((sum, h) => sum + h.total, 0);
     document.getElementById('headerTotalAsset').innerText = window.DashboardState.formatNumber(currentTotalAsset) + '원';
 
-    // 전일 대비 증감액 계산 (전일 종가 대비 금액)
+    // 전일 대비 증감액 계산 (통일된 calculatePriceDiff 함수 사용)
     let totalDayDiff = 0;
     matchedHoldings.forEach(item => {
-      if (item.basePrice && item.price !== undefined && item.qty) {
-        totalDayDiff += (item.price - item.basePrice) * item.qty;
-      } else if (item.changeRate !== undefined && item.changeRate !== null && item.total) {
-        const r = parseFloat(item.changeRate);
-        if (!isNaN(r) && r !== -100) {
-          totalDayDiff += item.total * (r / (100 + r));
-        }
-      }
+      const { diffAmt } = window.DashboardState.calculatePriceDiff(item);
+      const qty = item.qty || 1;
+      totalDayDiff += (diffAmt * qty);
     });
 
     const roundedDiff = Math.round(totalDayDiff);
