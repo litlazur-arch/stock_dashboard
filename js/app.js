@@ -237,13 +237,21 @@ window.DashboardApp = {
       historyData[historyData.length - 1].asset = currentTotalAsset;
     }
 
-    // 12개월 성장률 레이블
+    // 12개월 성장률 레이블 (상승: RED text-red-600, 하락: BLUE text-blue-600)
     const growthEl = document.getElementById('assetGrowthLabel');
     if (historyData.length >= 2 && historyData[0].asset > 0) {
       const first = historyData[0].asset;
       const last = historyData[historyData.length - 1].asset;
-      const pct = (((last - first) / first) * 100).toFixed(1);
+      const diff = last - first;
+      const pct = ((diff / first) * 100).toFixed(1);
       growthEl.innerText = (pct >= 0 ? '+' : '') + pct + '% (12개월)';
+      if (diff > 0) {
+        growthEl.className = "text-base font-semibold text-red-600";
+      } else if (diff < 0) {
+        growthEl.className = "text-base font-semibold text-blue-600";
+      } else {
+        growthEl.className = "text-base font-semibold text-slate-500";
+      }
     }
 
     // 5. 통합 계좌 제외 개별 계좌 간 배당금 공통 스케일 계산 (배당금 스케일 통합 유지)
