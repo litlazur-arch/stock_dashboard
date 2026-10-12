@@ -69,6 +69,29 @@
     <!-- 2. 실제 금융 대시보드 뷰 영역 (?u=j 또는 ?u=k 접속 시 활성화) -->
     <div id="dashboardAppView" class="flex flex-col flex-1">
 
+      <!-- 상단 상태바 (연동 상태 점, 갱신 시간 및 새로고침 버튼 결합 - 12px) -->
+      <header
+        class="bg-slate-50 border-b border-slate-200 px-3 py-2 text-xs text-slate-500 flex justify-between items-center">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" id="statusDot"></span>
+          <span id="lastUpdatedTime" class="tabular-nums truncate font-medium text-slate-600">동기화 대기 중</span>
+          <span class="mx-0.5 text-slate-300 shrink-0">|</span>
+          <span class="text-slate-400 shrink-0 text-xs">Google Sheets</span>
+        </div>
+
+        <!-- 새로고침 버튼 (12px) -->
+        <button onclick="window.DashboardApp.loadData()"
+          class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200/80 transition-all flex items-center gap-1.5 shrink-0 shadow-2xs active:scale-95"
+          title="데이터 새로고침">
+          <svg class="w-3.5 h-3.5 text-slate-500" id="refreshIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+            </path>
+          </svg>
+          <span class="text-xs font-semibold">새로고침</span>
+        </button>
+      </header>
+
       <!-- 대시보드 타이틀 및 총 자산 요약 헤더 -->
       <section class="px-3 pt-3 pb-2">
         <!-- 1행: 상단 라벨 (14px) -->
@@ -188,29 +211,6 @@
 
       </main>
 
-      <!-- 하단 푸터 (연동 상태 점, 갱신 시간 및 새로고침 버튼 결합 - 12px) -->
-      <footer
-        class="bg-slate-50 border-t border-slate-200 px-3 py-2 text-xs text-slate-500 flex justify-between items-center">
-        <div class="flex items-center gap-1.5 min-w-0">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" id="statusDot"></span>
-          <span id="lastUpdatedTime" class="tabular-nums truncate font-medium text-slate-600">동기화 대기 중</span>
-          <span class="mx-0.5 text-slate-300 shrink-0">|</span>
-          <span class="text-slate-400 shrink-0 text-xs">Google Sheets</span>
-        </div>
-
-        <!-- 새로고침 버튼 (12px) -->
-        <button onclick="window.DashboardApp.loadData()"
-          class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200/80 transition-all flex items-center gap-1.5 shrink-0 shadow-2xs active:scale-95"
-          title="데이터 새로고침">
-          <svg class="w-3.5 h-3.5 text-slate-500" id="refreshIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-            </path>
-          </svg>
-          <span class="text-xs font-semibold">새로고침</span>
-        </button>
-      </footer>
-
     </div>
 
   </div>
@@ -325,11 +325,11 @@
   </div>
 
   <!-- 3. 모듈화된 자바스크립트 로드 순서 (캐시 방지 파라미터 적용) -->
-  <script src="./js/api.js?v=20261010_06"></script>
-  <script src="./js/state.js?v=20261010_06"></script>
-  <script src="./js/charts.js?v=20261010_06"></script>
-  <script src="./js/ui.js?v=20261010_06"></script>
-  <script src="./js/app.js?v=20261010_06"></script>
+  <script src="./js/api.js?v=20261012_01"></script>
+  <script src="./js/state.js?v=20261012_01"></script>
+  <script src="./js/charts.js?v=20261012_01"></script>
+  <script src="./js/ui.js?v=20261012_01"></script>
+  <script src="./js/app.js?v=20261012_01"></script>
 </body>
 
 </html>
