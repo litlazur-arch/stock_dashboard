@@ -27,7 +27,7 @@ window.DashboardCharts = {
 
     const assets = history.map(d => d.asset);
     const maxVal = (customMax !== undefined) ? customMax : Math.max(...assets);
-    const minVal = (customMin !== undefined) ? customMin : (Math.min(...assets) * 0.96);
+    const minVal = (customMin !== undefined) ? customMin : 0;
     const barWidth = Math.max(12, (width / history.length) - 6);
 
     // 요약 레이블 업데이트 (해당 계좌의 실제 12개월 최저/최고값 표시)
