@@ -269,6 +269,7 @@ window.DashboardState = {
 
   // 로컬 스토리지 캐시 키 (버전 관리)
   CACHE_KEY: 'stock_dashboard_cache_v2',
+  LEGACY_CACHE_KEYS: ['stock_dashboard_cache', 'stock_dashboard_cache_v1'],
 
   /**
    * 로컬 스토리지에서 캐시된 최신 주식 데이터를 불러옵니다.
@@ -276,18 +277,22 @@ window.DashboardState = {
    */
   loadCachedData() {
     try {
-      const cached = localStorage.getItem(this.CACHE_KEY);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (parsed && parsed.data && parsed.data.holdings) {
-          parsed.data = this.normalizeData(parsed.data);
-          // 이상치(단일 종목 50억 초과)가 여전히 남은 경우 캐시 폐기
-          const hasAnomaly = parsed.data.holdings.some(h => (h.total || 0) > 5000000000);
-          if (hasAnomaly) {
-            localStorage.removeItem(this.CACHE_KEY);
-            return null;
-          }
-          return parsed;
+      let raw = localStorage.getItem(this.CACHE_KEY);
+      if (!raw) {
+        for (const k of this.LEGACY_CACHE_KEYS) {
+          raw = localStorage.getItem(k);
+          if (raw) break;
+        }
+      }
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const dataObj = parsed.data || parsed;
+        if (dataObj && dataObj.holdings && Array.isArray(dataObj.holdings) && dataObj.holdings.length > 0) {
+          const normalized = this.normalizeData(dataObj);
+          return {
+            data: normalized,
+            timestamp: parsed.timestamp || Date.now()
+          };
         }
       }
     } catch (e) {
