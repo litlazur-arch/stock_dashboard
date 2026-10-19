@@ -50,7 +50,7 @@ window.DashboardApp = {
       window.DashboardUI.setLoading(false); // 스피너 없이 메인 즉시 노출
       window.DashboardUI.setStatus('syncing'); // 백그라운드 동기화 중 표시
       
-      const cacheTimeStr = new Date(cached.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+      const cacheTimeStr = window.DashboardState.formatDateTime(cached.timestamp);
       const lastUpdateEl = document.getElementById('lastUpdatedTime');
       if (lastUpdateEl) lastUpdateEl.innerText = `캐시 (${cacheTimeStr}) 동기화 중...`;
 
@@ -104,8 +104,8 @@ window.DashboardApp = {
       window.DashboardUI.setStatus('success');
       window.DashboardUI.setLoading(false);
 
-      // 갱신 시각 표시
-      const timeStr = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+      // 갱신 시각 표시 (국제 표준 YYYY-MM-DD HH:mm)
+      const timeStr = window.DashboardState.formatDateTime(new Date());
       const lastUpdateEl = document.getElementById('lastUpdatedTime');
       if (lastUpdateEl) lastUpdateEl.innerText = "실시간: " + timeStr;
 

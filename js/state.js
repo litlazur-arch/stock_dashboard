@@ -61,6 +61,22 @@ window.DashboardState = {
   },
 
   /**
+   * 국제 표준 규격(ISO 8601 기반 YYYY-MM-DD HH:mm, 24시간제)으로 날짜와 시간을 포맷팅합니다.
+   * @param {Date|number|string} date
+   * @returns {string} 예: "2026-10-19 23:45"
+   */
+  formatDateTime(date) {
+    const d = date instanceof Date ? date : new Date(date);
+    if (isNaN(d.getTime())) return '';
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const h = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${y}-${m}-${day} ${h}:${min}`;
+  },
+
+  /**
    * 한국 금융 단위(억, 만 원)로 축약하여 표시합니다.
    * @param {number} num 
    * @returns {string} 예: "49.8억", "132만"
