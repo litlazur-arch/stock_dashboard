@@ -504,5 +504,56 @@ window.DashboardCharts = {
       circle.appendChild(title);
       svg.appendChild(circle);
     });
+  },
+
+  /**
+   * 보유 종목 카드 배경용 1개월 초경량 무텍스트 스파크라인 SVG 문자열을 생성합니다. (시안 1: 소프트 그라데이션 에어리어)
+   * @param {Array<number>} prices 최근 20영업일 종가 배열
+   * @returns {string} SVG 내부 마크업
+   */
+  generateCardBackgroundSparkline(prices) {
+    if (!prices || prices.length < 2) return '';
+
+    const width = 450;
+    const height = 75;
+    const minP = Math.min(...prices);
+    const maxP = Math.max(...prices);
+    const range = (maxP - minP) || 1;
+    const firstP = prices[0];
+    const lastP = prices[prices.length - 1];
+    const isUp = lastP >= firstP;
+
+    // 전달 대비 상승/하락 컬러 연동 (상승: RED, 하락: BLUE)
+    const strokeColor = isUp ? "#ef4444" : "#3b82f6";
+    const gradId = `cardBgGrad_${Math.random().toString(36).substr(2, 7)}`;
+
+    // 상하 여백 비율 (글자 가독성을 위해 상단 25%, 하단 10% 여백)
+    const padYTop = height * 0.25;
+    const padYBottom = height * 0.10;
+
+    const points = prices.map((p, idx) => {
+      const x = (idx / (prices.length - 1)) * width;
+      const y = height - padYBottom - ((p - minP) / range) * (height - padYTop - padYBottom);
+      return { x: x.toFixed(1), y: y.toFixed(1) };
+    });
+
+    let dLine = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 1; i < points.length; i++) {
+      dLine += ` L ${points[i].x} ${points[i].y}`;
+    }
+    const dArea = `${dLine} L ${width} ${height} L 0 ${height} Z`;
+
+    return `
+      <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${strokeColor}" stop-opacity="0.14" />
+            <stop offset="100%" stop-color="${strokeColor}" stop-opacity="0.01" />
+          </linearGradient>
+        </defs>
+        <path d="${dArea}" fill="url(#${gradId})" />
+        <path d="${dLine}" fill="none" stroke="${strokeColor}" stroke-width="1.3" stroke-opacity="0.28" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    `;
   }
 };

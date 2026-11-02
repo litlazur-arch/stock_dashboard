@@ -152,15 +152,21 @@ window.DashboardUI = {
       const card = document.createElement('div');
       card.id = 'stock-card-' + (item.account ? (item.account + '-') : '') + item.code;
       card.setAttribute('data-stock-code', item.code);
-      card.className = "p-3 bg-white border border-slate-200/90 rounded-xl flex items-center justify-between hover:border-blue-400 hover:shadow-xs transition-all duration-300 shadow-2xs cursor-pointer active:scale-[0.99]";
+      card.className = "relative p-3 bg-white border border-slate-200/90 rounded-xl flex items-center justify-between hover:border-blue-400 hover:shadow-xs transition-all duration-300 shadow-2xs cursor-pointer active:scale-[0.99] overflow-hidden";
       card.onclick = () => this.openStockModal(item, totalAsset);
       
       // 전일 대비 증감 계산 및 서식화 (통일된 헬퍼 사용)
       const { diffAmt, rate } = window.DashboardState.calculatePriceDiff(item);
       const { diffAmtHtml, diffRateHtml } = window.DashboardState.formatSignedDiff(diffAmt, rate);
 
+      // 시안 1: 배경 1개월 무텍스트 스파크라인 SVG 생성
+      const bgSparklineHtml = window.DashboardCharts && window.DashboardCharts.generateCardBackgroundSparkline
+        ? window.DashboardCharts.generateCardBackgroundSparkline(item.recentPrices)
+        : '';
+
       card.innerHTML = `
-        <div class="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+        ${bgSparklineHtml}
+        <div class="relative z-10 flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
           ${this.getStockIconHtml(item.code, item.name)}
           <div class="min-w-0 flex-1 pr-1">
             ${this.formatStockNameHtml(item.name)}
@@ -168,7 +174,7 @@ window.DashboardUI = {
         </div>
         
         <!-- 우측: 현재가 (18px: text-lg) & 증감 금액 (14px: text-sm) & 증감률 (14px: text-sm) -->
-        <div class="text-right flex flex-col items-end justify-center shrink-0 ml-2">
+        <div class="relative z-10 text-right flex flex-col items-end justify-center shrink-0 ml-2">
           <!-- 1행: 현재가 (18px) -->
           <div class="text-lg font-bold text-slate-900 tabular-nums tracking-tight leading-tight">
             ${window.DashboardState.formatNumber(item.price)}원
