@@ -36,9 +36,43 @@ window.DashboardCharts = {
     const maxEl = document.getElementById(maxId);
     if (maxEl) maxEl.innerText = window.DashboardState.formatKoreanMoney(Math.max(...assets)) + '원';
 
+    const range = (maxVal - minVal) || 1;
+
+    // 0. 최고, 최저, 현재 3개 수평 가이드선 렌더링 (스타일 A: 막대 뒤에 은은하게 배치)
+    if (assets.length > 0) {
+      const calcLineY = (val) => {
+        const barH = Math.max(4, ((val - minVal) / range) * (height - 34));
+        return height - 22 - barH;
+      };
+
+      const maxY = calcLineY(maxVal);
+      const minY = calcLineY(Math.min(...assets));
+      const currentAssetVal = assets[assets.length - 1];
+      const curY = calcLineY(currentAssetVal);
+
+      const createGuideLine = (y, color, dash, opacity, widthPx = 1) => {
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", "4");
+        line.setAttribute("y1", String(y));
+        line.setAttribute("x2", String(width - 4));
+        line.setAttribute("y2", String(y));
+        line.setAttribute("stroke", color);
+        line.setAttribute("stroke-width", String(widthPx));
+        line.setAttribute("stroke-dasharray", dash);
+        line.setAttribute("stroke-opacity", String(opacity));
+        return line;
+      };
+
+      // 최고선 (은은한 Gray 점선)
+      svg.appendChild(createGuideLine(maxY, "#cbd5e1", "3 3", 0.7, 1));
+      // 최저선 (은은한 Gray 점선)
+      svg.appendChild(createGuideLine(minY, "#cbd5e1", "3 3", 0.7, 1));
+      // 현재선 (포인트 Indigo/Blue 점선)
+      svg.appendChild(createGuideLine(curY, "#4f46e5", "4 3", 0.85, 1.2));
+    }
+
     history.forEach((item, idx) => {
       const x = idx * (width / history.length) + (width / history.length - barWidth) / 2;
-      const range = (maxVal - minVal) || 1;
       const barHeight = Math.max(4, ((item.asset - minVal) / range) * (height - 34));
       const y = height - 22 - barHeight;
 
