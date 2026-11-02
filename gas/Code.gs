@@ -116,7 +116,7 @@ function doGet(e) {
       var values = ws.getDataRange().getValues();
       if (values.length < 4) continue;
 
-      var lastRowIdx = 3;
+      var lastRowIdx = -1;
       for (var rIdx = 3; rIdx < values.length; rIdx++) {
         var rawD = values[rIdx][1];
         if (!rawD) continue;
@@ -130,6 +130,8 @@ function doGet(e) {
         }
         if (hasQty) lastRowIdx = rIdx;
       }
+
+      if (lastRowIdx === -1) continue;
 
       var maxC = Math.min(cfg.maxCol, values[1].length);
       for (var col = 2; col < maxC; col += 8) {

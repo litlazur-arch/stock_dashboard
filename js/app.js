@@ -214,7 +214,7 @@ window.DashboardApp = {
     }
 
     // 4. 최근 12개월 히스토리 데이터 구성
-    const historyData = rawData.history.map(row => {
+    const historyData = (rawData.history || []).map(row => {
       let asset = 0;
       let div = 0;
 
@@ -239,7 +239,7 @@ window.DashboardApp = {
 
     // 12개월 성장률 레이블 (상승: RED text-red-600, 하락: BLUE text-blue-600)
     const growthEl = document.getElementById('assetGrowthLabel');
-    if (historyData.length >= 2 && historyData[0].asset > 0) {
+    if (growthEl && historyData.length >= 2 && historyData[0].asset > 0) {
       const first = historyData[0].asset;
       const last = historyData[historyData.length - 1].asset;
       const diff = last - first;

@@ -46,7 +46,10 @@ window.DashboardUI = {
    */
   formatStockNameHtml(name) {
     if (!name) return '';
-    const norm = name.trim();
+    const norm = String(name).trim();
+    const escape = (window.DashboardState && window.DashboardState.escapeHtml)
+      ? window.DashboardState.escapeHtml.bind(window.DashboardState)
+      : (s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
     const brands = ['TIGER', 'Tiger', 'KODEX', 'Kodex', 'ACE', 'Ace', 'SOL', 'Sol', 'KBSTAR', 'Kbstar', 'ARIRANG', 'HANARO', 'PLUS', 'KOSEF', 'TIMEFOLIO', 'RISE'];
     
     for (const b of brands) {
@@ -54,13 +57,13 @@ window.DashboardUI = {
         const rest = norm.slice(b.length).trim();
         if (rest) {
           return `
-            <div class="text-lg font-bold text-slate-900 tracking-tight leading-snug">${b}</div>
-            <div class="text-lg font-bold text-slate-900 tracking-tight leading-snug break-keep">${rest}</div>
+            <div class="text-lg font-bold text-slate-900 tracking-tight leading-snug">${escape(b)}</div>
+            <div class="text-lg font-bold text-slate-900 tracking-tight leading-snug break-keep">${escape(rest)}</div>
           `;
         }
       }
     }
-    return `<div class="text-lg font-bold text-slate-900 tracking-tight leading-snug break-keep">${norm}</div>`;
+    return `<div class="text-lg font-bold text-slate-900 tracking-tight leading-snug break-keep">${escape(norm)}</div>`;
   },
 
   /**
@@ -91,10 +94,14 @@ window.DashboardUI = {
       fallbackUrl = `https://static.toss.im/png-icons/securities/icn-sec-fill-${targetCode}.png`;
     }
 
-    const initialText = normName.slice(0, 2);
+    const escape = (window.DashboardState && window.DashboardState.escapeHtml)
+      ? window.DashboardState.escapeHtml.bind(window.DashboardState)
+      : (s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+    const initialText = escape(normName.slice(0, 2));
+    const safeAlt = escape(normName);
 
     return `
-      <img src="${primaryUrl}" alt="${normName}"
+      <img src="${primaryUrl}" alt="${safeAlt}"
         class="w-full h-full object-cover rounded-full"
         loading="lazy"
         onerror="

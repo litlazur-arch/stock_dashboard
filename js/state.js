@@ -56,6 +56,21 @@ window.DashboardState = {
   /**
    * 숫자를 3자리 콤마 포맷으로 변환합니다 (예: 1,234,567)
    */
+  /**
+   * 문자열의 HTML 특수문자를 이스케이프하여 XSS를 방어합니다.
+   * @param {string} str 
+   * @returns {string}
+   */
+  escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  },
+
   formatNumber(num) {
     return Math.round(num || 0).toLocaleString('ko-KR');
   },
@@ -228,18 +243,7 @@ window.DashboardState = {
     if (!data) return null;
     if (data.holdings && Array.isArray(data.holdings)) {
       data.holdings.forEach(h => {
-        // 1. 배포된 구버전 GAS의 컬럼 스왑 버그 자동 복원 (자가 치유):
-        // 구버전 GAS는 buyTotal에 실제 수량(예: 667)을 넣고, qty에 매수단가(예: 49,055)를 넣어 total이 827억으로 폭증함
-        if (h.buyPrice === 0 && h.buyTotal > 0 && h.buyTotal < 50000 && h.qty > 500 && (h.total > 5000000000 || (h.price > 0 && h.total > h.buyTotal * h.price * 2))) {
-          const actualQty = h.buyTotal;
-          const actualBuyPrice = h.qty;
-          h.qty = actualQty;
-          h.buyPrice = actualBuyPrice;
-          h.buyTotal = Math.round(actualQty * actualBuyPrice);
-          h.total = Math.round(actualQty * (h.price || actualBuyPrice));
-        }
-
-        // 2. 매수금액 및 매수단가 보정
+        // 매수금액 및 매수단가 보정
         if ((!h.buyTotal || h.buyTotal === 0) && h.buyPrice > 0 && h.qty > 0) {
           h.buyTotal = Math.round(h.buyPrice * h.qty);
         }
