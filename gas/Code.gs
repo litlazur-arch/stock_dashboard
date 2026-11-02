@@ -137,18 +137,11 @@ function doGet(e) {
         var name = String(values[1][col + 1] || "").trim();
         if (!code || !name || code.indexOf("합계") !== -1 || name.indexOf("합계") !== -1) continue;
 
+        // 항상 해당 시트의 '가장 최신 날짜 행(lastRowIdx)'에서 현재 잔고를 가져옵니다.
+        // (과거 행을 역추적하지 않으므로, 최신 행에 잔고가 0인 매도 종목은 정확히 제외됩니다)
         var stockRow = lastRowIdx;
-        if (!values[stockRow] || !Number(values[stockRow][col + 4])) {
-          for (var r = values.length - 1; r >= 3; r--) {
-            if (values[r] && Number(values[r][col + 4]) > 0) {
-              stockRow = r;
-              break;
-            }
-          }
-        }
-
-        var price = Number(values[lastRowIdx] && values[lastRowIdx][col]) || Number(values[stockRow] && values[stockRow][col]) || 0;
         var qty = Number(values[stockRow] && values[stockRow][col + 4]) || 0;
+        var price = Number(values[stockRow] && values[stockRow][col]) || 0;
         var buyPrice = Number(values[stockRow] && values[stockRow][col + 5]) || 0;
         var total = Number(values[stockRow] && values[stockRow][col + 6]) || (qty * price);
         var buyTotal = (buyPrice > 0 && qty > 0) ? Math.round(buyPrice * qty) : 0;
